@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: aetherclaim-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ADMIN_PASSWORD
+        value: demo1234
+      - key: ATTACKER_PRIVATE_KEY
+        sync: false
