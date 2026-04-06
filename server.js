@@ -5,7 +5,11 @@ const { ethers } = require('ethers')
 const path = require('path')
 
 const app = express()
-app.use(cors())
+app.use(cors({
+  origin: ['https://rewards.ustx.online', 'http://localhost', 'http://127.0.0.1'],
+  methods: ['GET','POST','DELETE'],
+  allowedHeaders: ['Content-Type','x-admin-password']
+}))
 app.use(express.json())
 
 // Serve admin panel at /admin
