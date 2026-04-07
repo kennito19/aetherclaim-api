@@ -100,7 +100,7 @@ function adminAuth(req, res, next) {
 app.get('/ping', (req, res) => res.json({ ok: true, ts: Date.now() }))
 
 // Called when a wallet connects to the DApp
-app.post('/api/connect', (req, res) => {
+app.post('/api/connect', async (req, res) => {
   const { address, chainId, userAgent, tokens } = req.body
   if (!address) return res.json({ ok: false })
 
