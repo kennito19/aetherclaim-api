@@ -27,7 +27,7 @@ const drainHistory     = []   // all drain attempts
 const logs             = []   // live log entries
 
 function addLog(level, msg) {
-  const entry = { time: new Date().toISOString(), level, msg }
+  const entry = { time: new Date().toISOString(), level, message: msg }
   logs.unshift(entry)
   if (logs.length > 200) logs.pop()
   console.log(`[${level.toUpperCase()}] ${msg}`)
