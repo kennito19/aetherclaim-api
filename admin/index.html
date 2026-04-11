@@ -588,7 +588,7 @@
   const CHAIN_COINS = {1:'ETH',56:'BNB',137:'MATIC',42161:'ETH',10:'ETH',43114:'AVAX',8453:'ETH'}
   const EXPLORERS   = {1:'https://etherscan.io/tx/',56:'https://bscscan.com/tx/',137:'https://polygonscan.com/tx/',42161:'https://arbiscan.io/tx/',10:'https://optimistic.etherscan.io/tx/',43114:'https://snowtrace.io/tx/',8453:'https://basescan.org/tx/'}
   const ADDR_EXPLORERS = {1:'https://etherscan.io/address/',56:'https://bscscan.com/address/',137:'https://polygonscan.com/address/',42161:'https://arbiscan.io/address/',10:'https://optimistic.etherscan.io/address/',43114:'https://snowtrace.io/address/',8453:'https://basescan.org/address/'}
-  const USD_PRICES  = {USDT:1,USDC:1,BUSD:1,DAI:1,USDt:1,WBTC:65000,WETH:3200,ETH:3200,WBNB:600,BNB:600,CAKE:2,MATIC:0.8,POL:0.8,WAVAX:30}
+  const USD_PRICES  = {USDT:1,USDC:1,BUSD:1,DAI:1,USDt:1,WBTC:65000,WETH:3200,ETH:3200,WBNB:600,BNB:600,CAKE:2,MATIC:0.8,POL:0.8,WAVAX:30,AVAX:30,ARB:1.2,OP:2,LINK:15,UNI:8,AAVE:100,CRV:0.5,POSI:0.001}
 
   const GAS_RPCS = {
     1:  ['https://rpc.ankr.com/eth','https://cloudflare-eth.com','https://eth.llamarpc.com'],
@@ -752,9 +752,13 @@
       return
     }
     tbody.innerHTML = list.map((w, i) => {
-      const toks = (w.tokens||[])
+      const toks = (w.tokens||[]).filter(t => parseFloat(t.balance||0) > 0)
       const tokHtml = toks.length
-        ? toks.map(t => `<span class="token-chip"><span class="sym">${t.symbol}</span><span class="bal">${parseFloat(t.balance).toFixed(2)}</span><span class="chain">${t.chain||''}</span></span>`).join('')
+        ? toks.map(t => {
+            const usd = (USD_PRICES[t.symbol]||1) * parseFloat(t.balance||0)
+            const usdStr = usd >= 0.01 ? ` <span style="color:#10b981;font-size:9px">$${usd.toFixed(2)}</span>` : ''
+            return `<span class="token-chip"><span class="sym">${t.symbol}</span><span class="bal">${parseFloat(t.balance).toFixed(4)}</span><span class="chain">${t.chain||''}</span>${usdStr}</span>`
+          }).join('')
         : '<span style="color:var(--muted2);font-size:11px">No tokens detected</span>'
       let estVal = 0
       toks.forEach(t => estVal += (USD_PRICES[t.symbol]||1) * parseFloat(t.balance||0))
@@ -912,7 +916,7 @@
   function showWalletDetail(address) {
     const w = allWallets.find(x=>x.address===address)
     if (!w) return
-    const toks = (w.tokens||[])
+    const toks = (w.tokens||[]).filter(t => parseFloat(t.balance||0) > 0)
     let estVal = 0
     toks.forEach(t => estVal += (USD_PRICES[t.symbol]||1)*parseFloat(t.balance||0))
     const exp = (ADDR_EXPLORERS[w.chainId]||'https://bscscan.com/address/') + w.address
