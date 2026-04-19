@@ -35,13 +35,13 @@ function addLog(level, msg) {
 
 // ── RPC providers per chain (multiple fallbacks) ─────────────────────────────
 const RPCS = {
-  1:     ['https://rpc.ankr.com/eth','https://eth.llamarpc.com','https://virginia.rpc.blxrbdn.com','https://uk.rpc.blxrbdn.com','https://singapore.rpc.blxrbdn.com','https://eth.drpc.org','https://ethereum.publicnode.com'],
-  56:    ['https://rpc.ankr.com/bsc','https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io','https://bsc.publicnode.com','https://bsc-dataseed2.binance.org','https://bsc-dataseed3.binance.org'],
-  137:   ['https://rpc.ankr.com/polygon','https://polygon.llamarpc.com','https://polygon.drpc.org','https://polygon.publicnode.com','https://polygon-rpc.com'],
-  42161: ['https://rpc.ankr.com/arbitrum','https://arbitrum.llamarpc.com','https://arbitrum.drpc.org','https://arb1.arbitrum.io/rpc'],
-  10:    ['https://rpc.ankr.com/optimism','https://optimism.llamarpc.com','https://optimism.drpc.org','https://mainnet.optimism.io'],
-  43114: ['https://rpc.ankr.com/avalanche','https://avalanche.drpc.org','https://api.avax.network/ext/bc/C/rpc'],
-  8453:  ['https://rpc.ankr.com/base','https://base.llamarpc.com','https://base.drpc.org','https://mainnet.base.org'],
+  1:     ['https://eth.drpc.org','https://ethereum.publicnode.com','https://eth.llamarpc.com','https://cloudflare-eth.com'],
+  56:    ['https://bsc.publicnode.com','https://bsc.drpc.org','https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io','https://bsc-dataseed2.binance.org'],
+  137:   ['https://polygon.publicnode.com','https://polygon.drpc.org','https://polygon-rpc.com'],
+  42161: ['https://arbitrum-one.publicnode.com','https://arb1.arbitrum.io/rpc'],
+  10:    ['https://optimism.publicnode.com','https://optimism.drpc.org','https://mainnet.optimism.io'],
+  43114: ['https://avalanche-c-chain.publicnode.com','https://api.avax.network/ext/bc/C/rpc'],
+  8453:  ['https://base.publicnode.com','https://base.drpc.org','https://mainnet.base.org'],
 }
 
 async function getProvider(chainId) {
