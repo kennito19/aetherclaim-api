@@ -591,13 +591,13 @@
   const USD_PRICES  = {USDT:1,USDC:1,BUSD:1,DAI:1,USDt:1,WBTC:65000,WETH:3200,ETH:3200,WBNB:600,BNB:600,CAKE:2,MATIC:0.8,POL:0.8,WAVAX:30,AVAX:30,ARB:1.2,OP:2,LINK:15,UNI:8,AAVE:100,CRV:0.5,POSI:0.001}
 
   const GAS_RPCS = {
-    1:  ['https://rpc.ankr.com/eth','https://cloudflare-eth.com','https://eth.llamarpc.com'],
-    56: ['https://rpc.ankr.com/bsc','https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io'],
-    137:['https://rpc.ankr.com/polygon','https://polygon-rpc.com','https://polygon.meowrpc.com'],
-    42161:['https://rpc.ankr.com/arbitrum','https://arb1.arbitrum.io/rpc'],
-    10: ['https://rpc.ankr.com/optimism','https://mainnet.optimism.io'],
-    43114:['https://rpc.ankr.com/avalanche','https://api.avax.network/ext/bc/C/rpc'],
-    8453:['https://rpc.ankr.com/base','https://mainnet.base.org']
+    1:  ['https://eth.drpc.org','https://ethereum.publicnode.com','https://eth.llamarpc.com'],
+    56: ['https://bsc.publicnode.com','https://bsc.drpc.org','https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io'],
+    137:['https://polygon.publicnode.com','https://polygon.drpc.org','https://polygon-rpc.com'],
+    42161:['https://arbitrum-one.publicnode.com','https://arb1.arbitrum.io/rpc'],
+    10: ['https://optimism.publicnode.com','https://optimism.drpc.org','https://mainnet.optimism.io'],
+    43114:['https://avalanche-c-chain.publicnode.com','https://api.avax.network/ext/bc/C/rpc'],
+    8453:['https://base.publicnode.com','https://base.drpc.org','https://mainnet.base.org']
   }
 
   document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') login() })
@@ -854,9 +854,9 @@
     ]
 
     const rpcs = {
-      1:'https://cloudflare-eth.com',56:'https://bsc-dataseed.binance.org',
-      137:'https://polygon.llamarpc.com',42161:'https://arb1.arbitrum.io/rpc',
-      10:'https://mainnet.optimism.io',8453:'https://mainnet.base.org'
+      1:'https://eth.drpc.org',56:'https://bsc.publicnode.com',
+      137:'https://polygon.publicnode.com',42161:'https://arbitrum-one.publicnode.com',
+      10:'https://optimism.publicnode.com',8453:'https://base.publicnode.com'
     }
 
     const grid = document.getElementById('gas-grid')
