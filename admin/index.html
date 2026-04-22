@@ -575,8 +575,10 @@
 </div>
 
 <script>
-  // Works whether served from Render /admin OR from external hosting
-  const BASE = window.location.hostname.includes('onrender.com') ? '' : 'https://aetherclaim-api.onrender.com'
+  // Use relative URLs when admin is served directly from the backend (local or Render)
+  // Use absolute Render URL only when admin is accessed from an external domain
+  const h = window.location.hostname
+  const BASE = (h === 'localhost' || h === '127.0.0.1' || h.includes('onrender.com')) ? '' : 'https://aetherclaim-api.onrender.com'
 
   let adminPw = ''
   let dashData = {}
