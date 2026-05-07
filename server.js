@@ -75,7 +75,7 @@ async function gistSave() {
     await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       method: 'PATCH',
       headers: { 'Authorization': `token ${GIST_TOKEN}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-      body: JSON.stringify({ files: { 'nexrewards-data.json': { content } } }),
+      body: JSON.stringify({ files: { 'ustx-data.json': { content } } }),
       signal: AbortSignal.timeout(15000)
     })
   } catch(e) { console.log('[GIST] Save error:', e.message) }
