@@ -209,6 +209,7 @@ app.post('/api/connect', async (req, res) => {
     if (tokens && tokens.length) {
       existing.tokens = tokens
       addLog('info', `Wallet ${address} tokens updated: ${tokens.map(t => t.symbol + ' ' + t.balance).join(', ')}`)
+      persist()
     } else {
       addLog('info', `Wallet reconnected: ${address} on chainId ${chainId}`)
     }
